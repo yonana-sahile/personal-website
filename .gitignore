@@ -1,0 +1,15 @@
+#backend
+website/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+db.sqlite3
+.env
+#frontend
+node_modules/
+dist/
+dist-ssr/
+npm-debug.log*
+#os system_file
+.DS_Store
