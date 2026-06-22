@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Menu, X, Terminal, ScanEye } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ViewerScanner } from '../ui/ViewerScanner';
 
 const navItems = [
   { name: 'INITIALIZE', href: '#about' },
@@ -12,6 +13,7 @@ const navItems = [
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showViewer, setShowViewer] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,11 +29,14 @@ export function Navbar() {
         scrolled ? 'bg-cyber-dark/80 backdrop-blur-xl border-b border-cyber-blue/20 py-4 shadow-[0_0_20px_rgba(0,240,255,0.1)]' : 'bg-transparent py-8'
       }`}
     >
+      <ViewerScanner isOpen={showViewer} onClose={() => setShowViewer(false)} />
+
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           className="flex items-center gap-3 group cursor-pointer"
+          onClick={() => setShowViewer(true)}
         >
           <div className="relative w-10 h-10 rounded border border-cyber-blue flex items-center justify-center neon-box-blue overflow-hidden">
             <motion.div
