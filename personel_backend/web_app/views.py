@@ -10,6 +10,6 @@ def chat_text(request):
     if not message:
         return Response({'error': 'Message is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    chunks = vector_store.search(message, top_k=3)
-    answer = generate_response(message, chunks)
+    scored_chunks = vector_store.search(message, top_k=3)
+    answer = generate_response(message, scored_chunks)
     return Response({'text': answer})
