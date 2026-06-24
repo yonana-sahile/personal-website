@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = "django-insecure-kcr9s79sp2(n0#pt#kq8&q=-cuc&$7ca#)r-h-!du*+tf4up68"
@@ -84,6 +83,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
 LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
@@ -96,12 +96,15 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# ===== CORS Configuration =====
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "https://your-vercel-frontend.vercel.app",
+    "http://localhost:3000",    # React dev server (current)
+    "http://localhost:5173",    # Vite default (fallback)
+    "https://your-vercel-frontend.vercel.app",   # production frontend
 ]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
     "http://localhost:5173",
     "https://your-vercel-frontend.vercel.app",
 ]
