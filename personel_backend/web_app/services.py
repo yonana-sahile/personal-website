@@ -27,6 +27,7 @@ class VectorStore:
         query_embedding = self.model.encode(query, normalize_embeddings=True)
         scores = np.dot(self.embeddings, query_embedding)
         top_indices = np.argsort(scores)[::-1][:top_k]
-        return [self.chunks[i] for i in top_indices]
+        # Return (chunk, score) tuples
+        return [(self.chunks[i], float(scores[i])) for i in top_indices]
 
 vector_store = VectorStore()
