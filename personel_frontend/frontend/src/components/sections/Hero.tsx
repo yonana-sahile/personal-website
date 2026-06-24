@@ -1,10 +1,10 @@
 import { motion } from 'motion/react';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TerminalText } from '../ui/TerminalText';
 import { ChevronDown } from 'lucide-react';
 import { SolarSystem } from '../ui/SolarSystem';
 import { Birds } from '../ui/Birds';
-import { MatrixRain, ExcludeRect } from '../ui/MatrixRain';
+import { MatrixRain } from '../ui/MatrixRain';
 import ProjectExplainer from '../ui/ProjectExplainer';
 
 const TypewriterSahile = () => {
@@ -87,36 +87,6 @@ const TypewriterSahile = () => {
 };
 
 export function Hero() {
-  const photoRef = useRef<HTMLDivElement>(null);
-  const [photoBounds, setPhotoBounds] = useState<ExcludeRect | null>(null);
-
-  useEffect(() => {
-    const updateBounds = () => {
-      if (photoRef.current) {
-        const photoRect = photoRef.current.getBoundingClientRect();
-        const sectionRect = photoRef.current.closest('section')?.getBoundingClientRect();
-
-        if (sectionRect) {
-          setPhotoBounds({
-            x: photoRect.left - sectionRect.left,
-            y: photoRect.top - sectionRect.top,
-            width: photoRect.width,
-            height: photoRect.height
-          });
-        }
-      }
-    };
-
-    updateBounds();
-    window.addEventListener('resize', updateBounds);
-    window.addEventListener('scroll', updateBounds);
-
-    return () => {
-      window.removeEventListener('resize', updateBounds);
-      window.removeEventListener('scroll', updateBounds);
-    };
-  }, []);
-
   const float = {
     y: [-15, 15, -15],
     rotate: [-5, 5, -5],
@@ -133,39 +103,30 @@ export function Hero() {
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       <Birds />
       <ProjectExplainer />
-
       {/* Animated Background Orbs */}
       <motion.div animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.3, 0.1] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-1/4 -left-20 w-[400px] h-[400px] bg-cyber-blue rounded-full blur-[120px] pointer-events-none z-0" />
       <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.1, 0.2, 0.1] }} transition={{ duration: 10, repeat: Infinity, delay: 1 }} className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-cyber-purple rounded-full blur-[150px] pointer-events-none z-0" />
 
       {/* Full Background Matrix Rain */}
       <div
-        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
+        className="absolute inset-0 z-0 opacity-40 pointer-events-none"
         style={{ maskImage: "linear-gradient(to bottom, black 60%, transparent 100%)", WebkitMaskImage: "linear-gradient(to bottom, black 60%, transparent 100%)" }}
       >
-        <MatrixRain excludeRect={photoBounds} />
+        <MatrixRain />
       </div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 w-full grid md:grid-cols-12 gap-12 items-center relative z-10 pt-20">
         <div className="flex flex-col gap-4 md:col-span-7">
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mt-2 mb-6">
-
-             {/* Profile Photo - አሁን ሁሌም Clear ነው! */}
+             {/* Profile Photo - near beginning */}
              <motion.div
-               ref={photoRef}
                initial={{ opacity: 0, scale: 0.8 }}
                animate={{ opacity: 1, scale: 1 }}
                transition={{ delay: 0.1, duration: 0.5 }}
                className="relative w-40 h-40 md:w-56 md:h-56 flex-shrink-0 rounded-2xl overflow-hidden glass-panel bg-cyber-dark border border-cyber-green/50 neon-box-green shadow-[0_0_50px_rgba(0,255,65,0.3)] z-20 group"
              >
-                {/* አረንጓዴውን ሽፋን ሙሉ በሙሉ አጥፍተነዋል */}
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-cyber-green to-transparent element-scan z-30 opacity-50"></div>
-                {/* ፎቶው ኦሪጂናል ከለሩን ይይዛል፤ Hover ሲደረግ ደግሞ ትንሽ Zoom (scale-105) ያደርጋል */}
-                <img
-                  src="/profile.jpg"
-                  alt="Yonas Sahile"
-                  className="w-full h-full object-cover filter contrast-[1.1] group-hover:scale-105 transition-all duration-700"
-                />
+                <img src="/profile.jpg" alt="Yonas Sahile" className="w-full h-full object-cover filter contrast-[1.1] group-hover:scale-105 transition-all duration-700" />
              </motion.div>
 
              <div className="flex flex-col">
