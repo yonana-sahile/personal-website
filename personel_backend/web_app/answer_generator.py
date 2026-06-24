@@ -4,11 +4,9 @@ def generate_response(question, scored_chunks):
 
     best_chunk, best_score = scored_chunks[0]
 
-    # If the best match is too weak, politely refuse
-    if best_score < 0.4:
+    # Higher threshold – only answer if we're really confident
+    if best_score < 0.55:
         return "I'm not sure about that. I only know specific facts about Yonas. Try asking about his work, skills, or projects."
 
-    # Combine up to two strong chunks
-    if len(scored_chunks) >= 2 and scored_chunks[1][1] > 0.3:
-        return best_chunk + " " + scored_chunks[1][0]
+    # Return the single best chunk (avoids mixing in irrelevant contact info)
     return best_chunk
