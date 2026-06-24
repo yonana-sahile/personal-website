@@ -35,16 +35,16 @@ export function AIAssistantWidget() {
     setInputVal('');
 
     const newUserMsg: Message = { id: Date.now().toString(), role: 'user', text: userText };
-    const historyToPass = messages.map(m => ({ role: m.role, text: m.text }));
 
     setMessages(prev => [...prev, newUserMsg]);
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/gemini/chat', {
+      // 🔁 Updated to your Django AI backend
+      const response = await fetch('http://localhost:8000/api/chat/text/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userText, history: historyToPass }),
+        body: JSON.stringify({ message: userText }),
       });
       const data = await response.json();
 
