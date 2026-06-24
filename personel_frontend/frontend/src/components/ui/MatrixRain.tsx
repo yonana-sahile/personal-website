@@ -25,15 +25,15 @@ export function MatrixRain({ className = '' }: { className?: string }) {
     let animationFrame: number;
 
     const draw = () => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
       ctx.fillRect(0, 0, width, height);
 
-      ctx.fillStyle = '#0F0'; // Cyber green
+      ctx.fillStyle = '#00FF41'; // Matrix bright green
       ctx.font = `${fontSize}px monospace`;
 
       // Add glow
-      ctx.shadowBlur = 5;
-      ctx.shadowColor = '#0F0';
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = '#00FF41';
 
       for (let i = 0; i < drops.length; i++) {
         const text = chars.charAt(Math.floor(Math.random() * chars.length));
