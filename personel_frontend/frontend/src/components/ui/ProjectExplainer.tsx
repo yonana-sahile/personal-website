@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Globe as GlobeIcon, Play as PlayIcon, Pause as PauseIcon } from 'lucide-react';
+import { Globe as GlobeIcon, Play as PlayIcon, Pause as PauseIcon, Mic, MicOff } from 'lucide-react';
 
-// Audio Context Helper – ensure it's created but not started
 const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
 type Language = 'en' | 'am' | 'om' | 'ti';
@@ -51,14 +50,19 @@ const ProjectExplainer: React.FC = () => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [activeBubble, setActiveBubble] = useState(0);
     const [tickled, setTickled] = useState(false);
-
-    // Track state of energy for extra high motivation animations
     const [energyLevel, setEnergyLevel] = useState<'calm' | 'talking' | 'supercharged'>('calm');
+
+    // Voice Q&A states
+    const [isListening, setIsListening] = useState(false);
+    const [voiceQuestion, setVoiceQuestion] = useState('');
+    const [aiAnswer, setAiAnswer] = useState('');
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const recognitionRef = useRef<SpeechRecognition | null>(null);
 
     const sourceRef = useRef<AudioBufferSourceNode | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
-    // Cycle speech bubbles occasionally for high customer motivation
+    // Cycle bubbles
     useEffect(() => {
         const interval = setInterval(() => {
             if (!isSpeaking) {
@@ -68,7 +72,7 @@ const ProjectExplainer: React.FC = () => {
         return () => clearInterval(interval);
     }, [isSpeaking]);
 
-    // Track mouse dynamic movement for eyeball offset coords
+    // Mouse tracking for eyes
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (containerRef.current) {
@@ -85,46 +89,29 @@ const ProjectExplainer: React.FC = () => {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    // Clean up audio source on unmount
+    // Cleanup audio
     useEffect(() => {
         return () => {
             if (sourceRef.current) {
-                try {
-                    sourceRef.current.stop();
-                } catch(e){}
+                try { sourceRef.current.stop(); } catch(e) {}
             }
         };
     }, []);
 
     const stopAudio = () => {
         if (sourceRef.current) {
-            try {
-                sourceRef.current.stop();
-            } catch (e) {}
+            try { sourceRef.current.stop(); } catch (e) {}
             sourceRef.current = null;
         }
         setIsSpeaking(false);
         setEnergyLevel('calm');
     };
 
-    const playExplanation = async () => {
-        if (isSpeaking) {
-            stopAudio();
-            return;
-        }
-
-        setIsLoading(true);
-        setEnergyLevel('talking');
-
+    // TTS helper
+    const speakText = async (text: string, lang: string) => {
         try {
-            const script = SCRIPTS[selectedLang];
+            if (audioCtx.state === 'suspended') await audioCtx.resume();
 
-            // Resume AudioContext if suspended (required for current browser rules)
-            if (audioCtx.state === 'suspended') {
-                await audioCtx.resume();
-            }
-
-            // Fetch CSRF token securely
             const getCSRFToken = () => {
                 const match = document.cookie.match(/csrftoken=([\w-]+)/);
                 return match ? match[1] : "";
@@ -137,25 +124,14 @@ const ProjectExplainer: React.FC = () => {
                     'X-CSRFToken': getCSRFToken()
                 },
                 credentials: 'include',
-                body: JSON.stringify({ text: script.text, lang: script.lang })
+                body: JSON.stringify({ text, lang })
             });
-
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.error || 'Server error speaking.');
-            }
-
             const data = await res.json();
-            if (!data.audio_base64) throw new Error("No speech transmission received.");
+            if (!data.audio_base64) return;
 
-            // Base64 to ArrayBuffer decode sequence
             const binaryString = atob(data.audio_base64);
-            const len = binaryString.length;
-            const bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryString.charCodeAt(i);
-            }
-
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) bytes[i] = binaryString.charCodeAt(i);
             const audioBuffer = await audioCtx.decodeAudioData(bytes.buffer);
 
             const source = audioCtx.createBufferSource();
@@ -166,17 +142,86 @@ const ProjectExplainer: React.FC = () => {
                 setEnergyLevel('calm');
             };
             source.start();
-
             sourceRef.current = source;
             setIsSpeaking(true);
             setEnergyLevel('supercharged');
+        } catch (err) {
+            console.error('TTS error:', err);
+        }
+    };
 
+    // Play pre-recorded project explanation
+    const playExplanation = async () => {
+        if (isSpeaking) {
+            stopAudio();
+            return;
+        }
+
+        setIsLoading(true);
+        setEnergyLevel('talking');
+
+        try {
+            const script = SCRIPTS[selectedLang];
+            await speakText(script.text, script.lang);
         } catch (err: any) {
-            console.error('TTS speech error:', err);
-            // Non-blocking alert fallback if needed
+            console.error(err);
             setEnergyLevel('calm');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    // Start voice recognition
+    const startListening = () => {
+        const SpeechRecognitionAPI = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (!SpeechRecognitionAPI) {
+            alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
+            return;
+        }
+
+        const recognition = new SpeechRecognitionAPI();
+        recognition.lang = selectedLang === 'am' ? 'am-ET' : selectedLang === 'om' ? 'om-ET' : selectedLang === 'ti' ? 'ti-ET' : 'en-US';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onresult = async (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setVoiceQuestion(transcript);
+            setIsListening(false);
+
+            setIsAiLoading(true);
+            setAiAnswer('');
+            try {
+                const response = await fetch('http://localhost:8000/api/chat/text/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: transcript }),
+                });
+                const data = await response.json();
+                const answerText = data.text || 'I could not process that.';
+                setAiAnswer(answerText);
+                speakText(answerText, selectedLang);
+            } catch (err) {
+                setAiAnswer('Error connecting to AI.');
+            } finally {
+                setIsAiLoading(false);
+            }
+        };
+
+        recognition.onerror = (event: any) => {
+            console.error('Speech recognition error:', event.error);
+            setIsListening(false);
+        };
+        recognition.onend = () => setIsListening(false);
+
+        recognitionRef.current = recognition;
+        recognition.start();
+    };
+
+    const stopListening = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
         }
     };
 
@@ -195,13 +240,12 @@ const ProjectExplainer: React.FC = () => {
     return (
         <div
             ref={containerRef}
-            className="fixed bottom-2 left-6 z-[60] print:hidden select-none select-none transition-all duration-300"
+            className="fixed bottom-2 left-6 z-[60] print:hidden select-none transition-all duration-300"
             onMouseEnter={() => setShowMenu(true)}
             onMouseLeave={() => setShowMenu(false)}
         >
-            {/* Dynamic Motivation Speech Bubble */}
+            {/* Motivation bubble */}
             <div className={`absolute bottom-[115%] left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-900/95 backdrop-blur-md border ${isSpeaking ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-purple-500/50 shadow-xl'} p-4 rounded-2xl transition-all duration-500 transform ${showMenu || isSpeaking || tickled ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-6 pointer-events-none'}`}>
-                {/* Motivational Glow Header */}
                 <div className="flex items-center justify-between mb-1.5 border-b border-gray-800 pb-1.5">
                     <div className="flex items-center gap-1.5">
                         <span className="relative flex h-2 w-2">
@@ -223,7 +267,6 @@ const ProjectExplainer: React.FC = () => {
                     )}
                 </div>
 
-                {/* Bubble Text */}
                 <p className={`text-xs text-slate-100 leading-relaxed font-sans first-letter:uppercase italic transition-all duration-300 ${isSpeaking ? 'text-cyan-200' : ''}`}>
                     {isSpeaking
                         ? `"${SCRIPTS[selectedLang].text.substring(0, 160)}..."`
@@ -231,7 +274,6 @@ const ProjectExplainer: React.FC = () => {
                     }
                 </p>
 
-                {/* Subtitle / Footer inside bubble */}
                 <div className="mt-2 text-[10px] text-slate-400 flex justify-between items-center font-mono">
                     <span>Lang: <strong className="text-cyan-400 uppercase">{selectedLang}</strong></span>
                     {isSpeaking && (
@@ -240,7 +282,17 @@ const ProjectExplainer: React.FC = () => {
                 </div>
             </div>
 
-            {/* Language Selection & Audio Fire Station */}
+            {/* Voice Q&A result bubble */}
+            {(voiceQuestion || aiAnswer) && (
+                <div className="absolute bottom-[130%] left-1/2 -translate-x-1/2 w-72 bg-gray-900/95 backdrop-blur-md border border-purple-500/50 p-4 rounded-2xl shadow-xl z-10 mb-2">
+                    <p className="text-[9px] font-black uppercase tracking-widest text-purple-400 mb-1 font-mono">🎤 You asked:</p>
+                    <p className="text-xs text-cyan-300 mb-2">{voiceQuestion}</p>
+                    <p className="text-[9px] font-black uppercase tracking-widest text-cyan-400 mb-1 font-mono">💡 AI Answer:</p>
+                    <p className="text-xs text-slate-100">{aiAnswer || '...'}</p>
+                </div>
+            )}
+
+            {/* Language selection & play button */}
             <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-[175px] bg-[#0c0e17]/95 backdrop-blur-lg border border-cyan-500/50 p-3 rounded-2xl shadow-3xl transition-all duration-300 transform origin-bottom ${showMenu ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}`}>
                 <div className="flex flex-col gap-3 min-w-[200px]">
                     <div className="flex items-center justify-between border-b border-gray-800 pb-1.5">
@@ -283,25 +335,24 @@ const ProjectExplainer: React.FC = () => {
                         )}
                     </button>
                 </div>
-                {/* Speech Bubble Stem Anchor */}
                 <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-8 border-transparent border-t-[#0c0e17]"></div>
             </div>
 
-            {/* Micro Interaction Tooltip Label */}
+            {/* Tooltip */}
             <div className="absolute top-1/2 -right-24 transform -translate-y-1/2 bg-cyan-500/10 border border-cyan-500/30 text-[9px] uppercase tracking-wider font-extrabold text-cyan-300 px-2 py-1 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300">
                 Click to Talk! 🎙️
             </div>
 
-            {/* Robot Core Body Container */}
+            {/* Robot core (full SVG + microphone button) */}
             <div
                 className={`relative group cursor-pointer transition-transform duration-300 ${tickled ? 'animate-bounce' : ''}`}
                 onClick={handleTickle}
                 title="Click me for supercharged motivation!"
             >
-                {/* Dynamic futuristic shadow and glow behind him */}
+                {/* Glow */}
                 <div className={`absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/30 blur-2xl transition-all duration-700 ${energyLevel === 'supercharged' ? 'scale-125 opacity-100' : 'scale-90 opacity-60 group-hover:opacity-90'}`} />
 
-                {/* Animated Character Layout with Floating/Hover CSS class */}
+                {/* Robot SVG */}
                 <div className={`w-28 h-32 float-anim transition-all duration-750 ${isSpeaking ? 'scale-110 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'hover:scale-105 hover:rotate-2'}`}>
                     <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-3xl filter overflow-visible">
                         <defs>
@@ -324,10 +375,10 @@ const ProjectExplainer: React.FC = () => {
                             </filter>
                         </defs>
 
-                        {/* Floating Shadow Base */}
+                        {/* Floating shadow */}
                         <ellipse cx="50" cy="118" rx="28" ry="7" fill="rgba(0,0,0,0.6)" className="shadow-pulsing transition-all duration-500" />
 
-                        {/* Left & Right Rocket Thruster Trails */}
+                        {/* Thrusters */}
                         <g className="opacity-70">
                             <ellipse cx="40" cy="110" rx="4" ry="12" fill="#a855f7" filter="url(#neonCore)">
                                 <animate attributeName="ry" values="12;24;12" dur="0.15s" repeatCount="indefinite" />
@@ -337,7 +388,7 @@ const ProjectExplainer: React.FC = () => {
                             </ellipse>
                         </g>
 
-                        {/* Upper Antenna with double glowing nodes */}
+                        {/* Antenna */}
                         <g className="transition-transform duration-300">
                             <line x1="50" y1="20" x2="50" y2="-4" stroke="#475569" strokeWidth="2.5" />
                             <circle cx="50" cy="-4" r="5" fill={isSpeaking ? "#06b6d4" : "#a855f7"} filter="url(#neonCore)">
@@ -347,34 +398,29 @@ const ProjectExplainer: React.FC = () => {
                             <circle cx="35" cy="5" r="3.5" fill={tickled ? "#f43f5e" : "#64748b"} />
                         </g>
 
-                        {/* Head Body Structure (Glow contour) */}
+                        {/* Head */}
                         <rect x="18" y="16" width="64" height="48" rx="16" fill="url(#robotBodyGrad)" stroke={isSpeaking ? "#22d3ee" : "#475569"} strokeWidth="2.5" />
-
-                        {/* Face Screen with subtle tech grid lines */}
                         <rect x="23" y="21" width="54" height="36" rx="10" fill="#020617" stroke="#1e293b" strokeWidth="1" />
 
-                        {/* Interactive Scan Line Sweeper inside screen */}
+                        {/* Scan line */}
                         <line x1="24" y1="22" x2="76" y2="22" stroke="rgba(34, 211, 238, 0.45)" strokeWidth="1.5" filter="url(#neonCore)">
                             <animate attributeName="y1" values="22;54;22" dur="2s" repeatCount="indefinite" />
                             <animate attributeName="y2" values="22;54;22" dur="2s" repeatCount="indefinite" />
                         </line>
 
-                        {/* Dynamic Eyes Group (Mouse and Emotion Tracking) */}
+                        {/* Eyes */}
                         <g style={{ transform: `translate(${mousePos.x}px, ${mousePos.y}px)` }} className="transition-transform duration-200">
-                            {/* Left Cyber Eye */}
                             <ellipse cx="38" cy="36" rx="8" ry="10" fill={tickled ? "#ec4899" : "#22d3ee"} filter="url(#neonCore)">
                                 <animate attributeName="ry" values="10;1;10" dur="4s" repeatCount="indefinite" begin="0.5s" />
                             </ellipse>
                             <circle cx="38" cy="36" r="3" fill="#ffffff" />
-
-                            {/* Right Cyber Eye */}
                             <ellipse cx="62" cy="36" rx="8" ry="10" fill={tickled ? "#ec4899" : "#22d3ee"} filter="url(#neonCore)">
                                 <animate attributeName="ry" values="10;1;10" dur="4s" repeatCount="indefinite" begin="0.7s" />
                             </ellipse>
                             <circle cx="62" cy="36" r="3" fill="#ffffff" />
                         </g>
 
-                        {/* Dynamic Audio Speaker Mouth */}
+                        {/* Mouth */}
                         <g transform="translate(50, 48)">
                             {isSpeaking ? (
                                 <path d="M -14 0 Q 0 8 14 0" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" fill="none" filter="url(#neonCore)">
@@ -387,13 +433,13 @@ const ProjectExplainer: React.FC = () => {
                             )}
                         </g>
 
-                        {/* Metal Neck connection */}
+                        {/* Neck */}
                         <rect x="42" y="64" width="16" height="8" rx="2" fill="#334155" />
 
-                        {/* Robust Core Torso Chest Plate */}
+                        {/* Torso */}
                         <path d="M 24 72 L 76 72 L 82 108 L 18 108 Z" fill="url(#robotBodyGrad)" stroke={isSpeaking ? "#22d3ee" : "#334155"} strokeWidth="2.5" />
 
-                        {/* Energetic Heart Matrix (Core Reactor) */}
+                        {/* Core reactor */}
                         <g transform="translate(50, 90)">
                             <circle cx="0" cy="0" r={isSpeaking ? 14 : tickled ? 16 : 11} fill={tickled ? "#f43f5e" : isSpeaking ? "#22d3ee" : "#a855f7"} filter="url(#neonCore)" opacity="0.9">
                                 <animate attributeName="r" values="9;14;9" dur="1.5s" repeatCount="indefinite" />
@@ -401,37 +447,53 @@ const ProjectExplainer: React.FC = () => {
                             <polygon points="0,-7 6,4 -6,4" fill="#ffffff" transform={isSpeaking ? "rotate(180)" : ""} className="transition-transform duration-500" />
                         </g>
 
-                        {/* Left Arm with high wave rotation */}
+                        {/* Left arm */}
                         <g transform={isSpeaking ? "rotate(-18 24 78)" : tickled ? "rotate(-40 24 78)" : ""} className="transition-all duration-300 origin-[24px_78px]">
                             <path d="M 22 78 C 8 82 -2 96 4 105" stroke="#475569" strokeWidth="6" strokeLinecap="round" fill="none" />
-                            {/* Glowing Left hand emitter */}
                             <circle cx="4" cy="105" r="4.5" fill="#a855f7" filter="url(#neonCore)" />
                         </g>
 
-                        {/* Right Arm waving or raised happily */}
+                        {/* Right arm */}
                         <g transform={isSpeaking ? "rotate(22 76 78)" : tickled ? "rotate(45 76 78)" : "rotate(-10 76 78)"} className="transition-all duration-300 origin-[76px_78px]">
                             <path d="M 78 78 C 92 82 102 96 96 105" stroke="#475569" strokeWidth="6" strokeLinecap="round" fill="none" />
-                            {/* Glowing Right hand emitter */}
                             <circle cx="96" cy="105" r="4.5" fill="#22d3ee" filter="url(#neonCore)" />
                         </g>
                     </svg>
                 </div>
+
+                {/* Microphone button */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        if (isListening) {
+                            stopListening();
+                        } else {
+                            startListening();
+                        }
+                    }}
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg flex items-center justify-center border border-white/20 hover:scale-110 transition-transform"
+                >
+                    {isListening ? (
+                        <MicOff className="w-4 h-4 text-white animate-pulse" />
+                    ) : (
+                        <Mic className="w-4 h-4 text-white" />
+                    )}
+                </button>
+
+                {/* Listening pulse */}
+                {isListening && (
+                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-cyan-400 animate-ping opacity-40" />
+                )}
             </div>
 
             <style>{`
-                /* Soft hovering flight animation */
                 @keyframes float-loop {
-                    0%, 100% {
-                        transform: translateY(0px) rotate(0deg);
-                    }
-                    50% {
-                        transform: translateY(-8px) rotate(1deg);
-                    }
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-8px) rotate(1deg); }
                 }
                 .float-anim {
                     animation: float-loop 3s ease-in-out infinite;
                 }
-
                 @keyframes music-bar {
                     0%, 100% { height: 3px; }
                     50% { height: 13px; }
