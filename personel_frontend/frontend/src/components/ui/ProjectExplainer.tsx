@@ -101,7 +101,8 @@ const ProjectExplainer: React.FC = () => {
                 return match ? match[1] : "";
             };
 
-            const res = await fetch('/api/api/gtts-robot/', {
+            // ✅ FIXED URL – now points to the Django backend
+            const res = await fetch('http://localhost:8000/api/gtts-robot/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -136,10 +137,8 @@ const ProjectExplainer: React.FC = () => {
 
     // Start a conversation: greeting → listen
     const startConversation = async () => {
-        // Prevent multiple simultaneous conversations
         if (isListening || isProcessing || isSpeaking) return;
 
-        // Greeting message (in selected language)
         const greetings: Record<Language, string> = {
             en: "Hello! I'm Yonas's AI assistant. How can I help you today?",
             am: "ሰላም! እኔ የዮናስ AI ረዳት ነኝ። እንዴት ልረዳዎ?",
@@ -150,14 +149,11 @@ const ProjectExplainer: React.FC = () => {
         await speakText(greetings[selectedLang], selectedLang);
         setGreetingSpoken(true);
 
-        // Wait for TTS to finish, then start listening
-        // We estimate the TTS length; a better way is to use source.onended, but for simplicity:
         setTimeout(() => {
             startListening();
-        }, 3000); // adjust if needed (better to listen for onended event)
+        }, 3000);
     };
 
-    // Actually start speech recognition
     const startListening = () => {
         const SpeechRecognitionAPI = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognitionAPI) {
@@ -182,7 +178,6 @@ const ProjectExplainer: React.FC = () => {
             setVoiceQuestion(transcript);
             setIsListening(false);
 
-            // Process with AI
             setIsProcessing(true);
             try {
                 const response = await fetch('http://localhost:8000/api/chat/text/', {
