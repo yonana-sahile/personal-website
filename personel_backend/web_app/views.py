@@ -5,10 +5,10 @@ from django.views.decorators.csrf import csrf_exempt
 from .services import vector_store
 from .answer_generator import generate_response
 
+import subprocess
 import tempfile
 import base64
 import os
-import pyttsx3
 
 
 # ── Existing AI Chat endpoint ─────────────────────────────────────────────
@@ -23,31 +23,44 @@ def chat_text(request):
     return Response({'text': answer})
 
 
-# ── NEW Text‑to‑Speech endpoint (offline with pyttsx3) ────────────────────
+# ── Stable Text‑to‑Speech endpoint (uses system espeak) ───────────────────
 @csrf_exempt
 @api_view(['POST'])
 def tts(request):
     text = request.data.get('text', '')
-    lang = request.data.get('lang', 'en')   # pyttsx3 uses system voices; lang is ignored for now
+    lang = request.data.get('lang', 'en')
     if not text:
         return Response({'error': 'Text required'}, status=400)
 
+    # Map language codes to espeak voices (fallback to English if not available)
+    voice_map = {
+        'en': 'english-us',
+        'am': 'amharic',
+        'om': 'oromo',
+        'ti': 'tigrinya',
+    }
+    voice = voice_map.get(lang, 'english-us')
+
     try:
-        engine = pyttsx3.init()
+        # Create a temporary WAV file
+        with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as fp:
+            wav_path = fp.name
 
-        # Create a temporary file to save the audio
-        with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as fp:
-            temp_name = fp.name
+        # Run espeak to generate speech
+        cmd = ['espeak', '-w', wav_path, '-v', voice, '--', text]
+        subprocess.run(cmd, check=True, capture_output=True)
 
-        engine.save_to_file(text, temp_name)
-        engine.runAndWait()
-
-        # Read the generated audio
-        with open(temp_name, 'rb') as f:
+        # Read the generated audio and encode it
+        with open(wav_path, 'rb') as f:
             audio_bytes = f.read()
-        os.unlink(temp_name)
+        os.unlink(wav_path)
 
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         return Response({'audio_base64': audio_base64})
+
+    except subprocess.CalledProcessError as e:
+        # If espeak fails, return the error message
+        error_msg = e.stderr.decode() if e.stderr else str(e)
+        return Response({'error': f'espeak failed: {error_msg}'}, status=500)
     except Exception as e:
         return Response({'error': str(e)}, status=500)
