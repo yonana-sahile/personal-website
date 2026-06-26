@@ -38,9 +38,13 @@ const ProjectExplainer: React.FC = () => {
     const [aiAnswer, setAiAnswer] = useState('');
     const [greetingSpoken, setGreetingSpoken] = useState(false);
 
+    // 🔥 NEW: tracks if we're in a continuous conversation (auto‑listen loop)
+    const [conversationActive, setConversationActive] = useState(false);
+
     const sourceRef = useRef<AudioBufferSourceNode | null>(null);
     const recognitionRef = useRef<SpeechRecognition | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const autoListenTimeout = useRef<NodeJS.Timeout | null>(null);
 
     // Cycle bubbles when idle
     useEffect(() => {
@@ -78,6 +82,9 @@ const ProjectExplainer: React.FC = () => {
             if (recognitionRef.current) {
                 try { recognitionRef.current.stop(); } catch(e) {}
             }
+            if (autoListenTimeout.current) {
+                clearTimeout(autoListenTimeout.current);
+            }
         };
     }, []);
 
@@ -85,7 +92,7 @@ const ProjectExplainer: React.FC = () => {
         if (sourceRef.current) {
             try {
                 sourceRef.current.stop();
-                sourceRef.current.disconnect();   // <-- FIX: fully release audio node
+                sourceRef.current.disconnect();
             } catch (e) {}
             sourceRef.current = null;
         }
@@ -93,10 +100,16 @@ const ProjectExplainer: React.FC = () => {
         setEnergyLevel('calm');
     };
 
-    // TTS – speak any text in the selected language
+    // ── TTS that automatically re‑listens after speaking ──────────────────
     const speakText = async (text: string, lang: string) => {
         try {
             stopAudio();
+            // Stop listening while speaking
+            if (recognitionRef.current) {
+                recognitionRef.current.abort();
+                setIsListening(false);
+            }
+
             if (audioCtx.state === 'suspended') await audioCtx.resume();
 
             const getCSRFToken = () => {
@@ -127,6 +140,13 @@ const ProjectExplainer: React.FC = () => {
             source.onended = () => {
                 setIsSpeaking(false);
                 setEnergyLevel('calm');
+                // 🔥 After robot finishes speaking, automatically listen again if conversation is active
+                if (conversationActive) {
+                    if (autoListenTimeout.current) clearTimeout(autoListenTimeout.current);
+                    autoListenTimeout.current = setTimeout(() => {
+                        startListening();
+                    }, 1000); // short pause before listening
+                }
             };
             source.start();
             sourceRef.current = source;
@@ -137,9 +157,11 @@ const ProjectExplainer: React.FC = () => {
         }
     };
 
-    // Start a conversation: greeting → listen
+    // ── Start the conversation loop ────────────────────────────────────────
     const startConversation = async () => {
         if (isListening || isProcessing || isSpeaking) return;
+
+        setConversationActive(true);   // enable auto‑listening
 
         const greetings: Record<Language, string> = {
             en: "Hello! I'm Yonas's AI assistant. How can I help you today?",
@@ -150,17 +172,20 @@ const ProjectExplainer: React.FC = () => {
 
         await speakText(greetings[selectedLang], selectedLang);
         setGreetingSpoken(true);
-
-        setTimeout(() => {
-            startListening();
-        }, 3000);
+        // Listening will start automatically when the greeting audio ends
     };
 
+    // ── Start speech recognition ──────────────────────────────────────────
     const startListening = () => {
         const SpeechRecognitionAPI = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognitionAPI) {
             alert('Speech recognition is not supported in your browser. Please use Chrome or Edge.');
             return;
+        }
+
+        // Stop any existing recognition instance
+        if (recognitionRef.current) {
+            recognitionRef.current.abort();
         }
 
         const recognition = new SpeechRecognitionAPI();
@@ -200,11 +225,29 @@ const ProjectExplainer: React.FC = () => {
 
         recognition.onerror = (event: any) => {
             console.error('Speech recognition error:', event.error);
-            setIsListening(false);
+            // 🔥 If the error is just a timeout or no speech, and we're still in conversation, restart listening
+            if (conversationActive && (event.error === 'no-speech' || event.error === 'aborted')) {
+                setIsListening(false); // ensure state is updated
+                if (autoListenTimeout.current) clearTimeout(autoListenTimeout.current);
+                autoListenTimeout.current = setTimeout(() => {
+                    startListening();
+                }, 1500);
+            } else {
+                setIsListening(false);
+            }
         };
 
         recognition.onend = () => {
-            setIsListening(false);
+            // If the recognition ended without a result and conversation is active, restart listening
+            if (conversationActive && !isProcessing) {
+                if (!autoListenTimeout.current) {
+                    autoListenTimeout.current = setTimeout(() => {
+                        startListening();
+                    }, 1000);
+                }
+            } else {
+                setIsListening(false);
+            }
         };
 
         recognitionRef.current = recognition;
@@ -213,8 +256,14 @@ const ProjectExplainer: React.FC = () => {
 
     const stopListening = () => {
         if (recognitionRef.current) {
-            recognitionRef.current.stop();
+            recognitionRef.current.abort();
             setIsListening(false);
+        }
+        // 🔥 End the continuous conversation
+        setConversationActive(false);
+        if (autoListenTimeout.current) {
+            clearTimeout(autoListenTimeout.current);
+            autoListenTimeout.current = null;
         }
     };
 
@@ -228,6 +277,7 @@ const ProjectExplainer: React.FC = () => {
         }, 1200);
     };
 
+    // ── JSX (exactly as before, no changes needed) ──────────────────────────
     return (
         <div
             ref={containerRef}
