@@ -30,15 +30,11 @@ const ProjectExplainer: React.FC = () => {
     const [showMenu, setShowMenu] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [activeBubble, setActiveBubble] = useState(0);
-    const [tickled, setTickled] = useState(false);
     const [energyLevel, setEnergyLevel] = useState<'calm' | 'talking' | 'supercharged'>('calm');
 
-    // Voice Q&A conversation
     const [voiceQuestion, setVoiceQuestion] = useState('');
     const [aiAnswer, setAiAnswer] = useState('');
     const [greetingSpoken, setGreetingSpoken] = useState(false);
-
-    // 🔥 NEW: tracks if we're in a continuous conversation (auto‑listen loop)
     const [conversationActive, setConversationActive] = useState(false);
 
     const sourceRef = useRef<AudioBufferSourceNode | null>(null);
@@ -49,12 +45,12 @@ const ProjectExplainer: React.FC = () => {
     // Cycle bubbles when idle
     useEffect(() => {
         const interval = setInterval(() => {
-            if (!isSpeaking) {
+            if (!isSpeaking && !isListening && !isProcessing) {
                 setActiveBubble((prev) => (prev + 1) % MOTIVATIONAL_BUBBLES.length);
             }
         }, 8000);
         return () => clearInterval(interval);
-    }, [isSpeaking]);
+    }, [isSpeaking, isListening, isProcessing]);
 
     // Mouse tracking for eyes
     useEffect(() => {
@@ -100,11 +96,10 @@ const ProjectExplainer: React.FC = () => {
         setEnergyLevel('calm');
     };
 
-    // ── TTS that automatically re‑listens after speaking ──────────────────
+    // TTS that automatically re‑listens after speaking
     const speakText = async (text: string, lang: string) => {
         try {
             stopAudio();
-            // Stop listening while speaking
             if (recognitionRef.current) {
                 recognitionRef.current.abort();
                 setIsListening(false);
@@ -140,12 +135,11 @@ const ProjectExplainer: React.FC = () => {
             source.onended = () => {
                 setIsSpeaking(false);
                 setEnergyLevel('calm');
-                // 🔥 After robot finishes speaking, automatically listen again if conversation is active
                 if (conversationActive) {
                     if (autoListenTimeout.current) clearTimeout(autoListenTimeout.current);
                     autoListenTimeout.current = setTimeout(() => {
                         startListening();
-                    }, 1000); // short pause before listening
+                    }, 1000);
                 }
             };
             source.start();
@@ -157,11 +151,11 @@ const ProjectExplainer: React.FC = () => {
         }
     };
 
-    // ── Start the conversation loop ────────────────────────────────────────
+    // Start conversation (called by clicking the robot body)
     const startConversation = async () => {
         if (isListening || isProcessing || isSpeaking) return;
 
-        setConversationActive(true);   // enable auto‑listening
+        setConversationActive(true);
 
         const greetings: Record<Language, string> = {
             en: "Hello! I'm Yonas's AI assistant. How can I help you today?",
@@ -172,10 +166,10 @@ const ProjectExplainer: React.FC = () => {
 
         await speakText(greetings[selectedLang], selectedLang);
         setGreetingSpoken(true);
-        // Listening will start automatically when the greeting audio ends
+        // Listening starts automatically after greeting ends
     };
 
-    // ── Start speech recognition ──────────────────────────────────────────
+    // Start speech recognition
     const startListening = () => {
         const SpeechRecognitionAPI = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
         if (!SpeechRecognitionAPI) {
@@ -183,7 +177,6 @@ const ProjectExplainer: React.FC = () => {
             return;
         }
 
-        // Stop any existing recognition instance
         if (recognitionRef.current) {
             recognitionRef.current.abort();
         }
@@ -225,9 +218,8 @@ const ProjectExplainer: React.FC = () => {
 
         recognition.onerror = (event: any) => {
             console.error('Speech recognition error:', event.error);
-            // 🔥 If the error is just a timeout or no speech, and we're still in conversation, restart listening
             if (conversationActive && (event.error === 'no-speech' || event.error === 'aborted')) {
-                setIsListening(false); // ensure state is updated
+                setIsListening(false);
                 if (autoListenTimeout.current) clearTimeout(autoListenTimeout.current);
                 autoListenTimeout.current = setTimeout(() => {
                     startListening();
@@ -238,7 +230,6 @@ const ProjectExplainer: React.FC = () => {
         };
 
         recognition.onend = () => {
-            // If the recognition ended without a result and conversation is active, restart listening
             if (conversationActive && !isProcessing) {
                 if (!autoListenTimeout.current) {
                     autoListenTimeout.current = setTimeout(() => {
@@ -254,12 +245,11 @@ const ProjectExplainer: React.FC = () => {
         recognition.start();
     };
 
-    const stopListening = () => {
+    const stopConversation = () => {
         if (recognitionRef.current) {
             recognitionRef.current.abort();
             setIsListening(false);
         }
-        // 🔥 End the continuous conversation
         setConversationActive(false);
         if (autoListenTimeout.current) {
             clearTimeout(autoListenTimeout.current);
@@ -267,17 +257,16 @@ const ProjectExplainer: React.FC = () => {
         }
     };
 
-    const handleTickle = () => {
-        setTickled(true);
-        setEnergyLevel('supercharged');
-        setActiveBubble(Math.floor(Math.random() * MOTIVATIONAL_BUBBLES.length));
-        setTimeout(() => {
-            setTickled(false);
-            if (!isSpeaking) setEnergyLevel('calm');
-        }, 1200);
+    // Robot click handler – the main interaction
+    const handleRobotClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (isListening || isProcessing || isSpeaking) {
+            stopConversation();
+        } else {
+            startConversation();
+        }
     };
 
-    // ── JSX (exactly as before, no changes needed) ──────────────────────────
     return (
         <div
             ref={containerRef}
@@ -285,16 +274,16 @@ const ProjectExplainer: React.FC = () => {
             onMouseEnter={() => setShowMenu(true)}
             onMouseLeave={() => setShowMenu(false)}
         >
-            {/* ── Motivation / Status Bubble ────────────────────────────── */}
-            <div className={`absolute bottom-[115%] left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-900/95 backdrop-blur-md border ${isSpeaking ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-purple-500/50 shadow-xl'} p-4 rounded-2xl transition-all duration-500 transform ${showMenu || isSpeaking || tickled || isListening ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-6 pointer-events-none'}`}>
+            {/* ── Status Bubble ─────────────────────────────────────────── */}
+            <div className={`absolute bottom-[115%] left-1/2 -translate-x-1/2 mb-2 w-72 bg-gray-900/95 backdrop-blur-md border ${isSpeaking ? 'border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.3)]' : 'border-purple-500/50 shadow-xl'} p-4 rounded-2xl transition-all duration-500 transform ${showMenu || isSpeaking || isListening || isProcessing || !conversationActive ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 translate-y-6 pointer-events-none'}`}>
                 <div className="flex items-center justify-between mb-1.5 border-b border-gray-800 pb-1.5">
                     <div className="flex items-center gap-1.5">
                         <span className="relative flex h-2 w-2">
-                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isSpeaking ? 'bg-cyan-400' : 'bg-purple-400'}`}></span>
-                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isSpeaking ? 'bg-cyan-500' : 'bg-purple-500'}`}></span>
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isSpeaking ? 'bg-cyan-400' : isListening ? 'bg-purple-400' : 'bg-green-400'}`}></span>
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isSpeaking ? 'bg-cyan-500' : isListening ? 'bg-purple-500' : 'bg-green-500'}`}></span>
                         </span>
                         <span className="text-[10px] font-black uppercase tracking-widest text-[#a855f7] font-mono">
-                            {isSpeaking ? 'SPEAKING...' : isListening ? 'LISTENING...' : isProcessing ? 'THINKING...' : 'AI READY'}
+                            {isSpeaking ? 'SPEAKING...' : isListening ? 'LISTENING...' : isProcessing ? 'THINKING...' : 'CLICK ME TO TALK!'}
                         </span>
                     </div>
                     {(isSpeaking || isListening || isProcessing) && (
@@ -320,7 +309,9 @@ const ProjectExplainer: React.FC = () => {
                 )}
                 {!voiceQuestion && !aiAnswer && (
                     <p className="text-xs text-slate-300 italic leading-relaxed">
-                        {greetingSpoken ? "I'm listening... ask anything about Yonas!" : "Tap the microphone to start a voice conversation!"}
+                        {conversationActive
+                            ? "I'm listening... ask anything about Yonas!"
+                            : "Just click the robot and start talking! 🎙️"}
                     </p>
                 )}
             </div>
@@ -340,7 +331,7 @@ const ProjectExplainer: React.FC = () => {
                                 key={lang}
                                 onClick={() => {
                                     stopAudio();
-                                    stopListening();
+                                    stopConversation();
                                     setSelectedLang(lang as Language);
                                     setGreetingSpoken(false);
                                     setVoiceQuestion('');
@@ -356,16 +347,15 @@ const ProjectExplainer: React.FC = () => {
                 <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-8 border-transparent border-t-[#0c0e17]"></div>
             </div>
 
-            {/* ── Robot with Microphone ─────────────────────────────────── */}
+            {/* ── Robot (click anywhere to start conversation) ───────────── */}
             <div
-                className={`relative group cursor-pointer transition-transform duration-300 ${tickled ? 'animate-bounce' : ''}`}
-                onClick={handleTickle}
-                title="Tap the microphone to start a voice conversation!"
+                className="relative group cursor-pointer transition-transform duration-300"
+                onClick={handleRobotClick}
+                title="Click to start a voice conversation!"
             >
-                <div className={`absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/30 blur-2xl transition-all duration-700 ${energyLevel === 'supercharged' ? 'scale-125 opacity-100' : 'scale-90 opacity-60 group-hover:opacity-90'}`} />
+                <div className={`absolute inset-0 rounded-full bg-gradient-to-tr from-cyan-500/20 to-purple-600/30 blur-2xl transition-all duration-700 ${conversationActive ? 'scale-125 opacity-100' : 'scale-90 opacity-60 group-hover:opacity-100 group-hover:scale-100'}`} />
 
-                {/* Robot SVG (unchanged) */}
-                <div className={`w-28 h-32 float-anim transition-all duration-750 ${isSpeaking ? 'scale-110 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'hover:scale-105 hover:rotate-2'}`}>
+                <div className={`w-28 h-32 float-anim transition-all duration-750 ${isSpeaking ? 'scale-110 drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]' : 'group-hover:scale-105 group-hover:rotate-2'}`}>
                     <svg viewBox="0 0 100 120" className="w-full h-full drop-shadow-3xl filter overflow-visible">
                         <defs>
                             <linearGradient id="robotBodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -402,7 +392,7 @@ const ProjectExplainer: React.FC = () => {
                                 <animate attributeName="r" values="4;7;4" dur="1s" repeatCount="indefinite" />
                             </circle>
                             <line x1="50" y1="20" x2="35" y2="5" stroke="#475569" strokeWidth="1.5" />
-                            <circle cx="35" cy="5" r="3.5" fill={tickled ? "#f43f5e" : "#64748b"} />
+                            <circle cx="35" cy="5" r="3.5" fill={conversationActive ? "#f43f5e" : "#64748b"} />
                         </g>
 
                         {/* Head */}
@@ -415,11 +405,11 @@ const ProjectExplainer: React.FC = () => {
 
                         {/* Eyes */}
                         <g style={{ transform: `translate(${mousePos.x}px, ${mousePos.y}px)` }}>
-                            <ellipse cx="38" cy="36" rx="8" ry="10" fill={tickled ? "#ec4899" : "#22d3ee"} filter="url(#neonCore)">
+                            <ellipse cx="38" cy="36" rx="8" ry="10" fill={conversationActive ? "#22d3ee" : "#22d3ee"} filter="url(#neonCore)">
                                 <animate attributeName="ry" values="10;1;10" dur="4s" repeatCount="indefinite" begin="0.5s" />
                             </ellipse>
                             <circle cx="38" cy="36" r="3" fill="#ffffff" />
-                            <ellipse cx="62" cy="36" rx="8" ry="10" fill={tickled ? "#ec4899" : "#22d3ee"} filter="url(#neonCore)">
+                            <ellipse cx="62" cy="36" rx="8" ry="10" fill={conversationActive ? "#22d3ee" : "#22d3ee"} filter="url(#neonCore)">
                                 <animate attributeName="ry" values="10;1;10" dur="4s" repeatCount="indefinite" begin="0.7s" />
                             </ellipse>
                             <circle cx="62" cy="36" r="3" fill="#ffffff" />
@@ -431,7 +421,7 @@ const ProjectExplainer: React.FC = () => {
                                 <path d="M -14 0 Q 0 8 14 0" stroke="#22d3ee" strokeWidth="3" strokeLinecap="round" fill="none" filter="url(#neonCore)">
                                     <animate attributeName="d" values="M -14 0 Q 0 10 14 0; M -14 0 Q 0 -6 14 0; M -14 0 Q 0 10 14 0" dur="0.18s" repeatCount="indefinite" />
                                 </path>
-                            ) : tickled ? (
+                            ) : conversationActive ? (
                                 <path d="M -10 -2 Q 0 8 10 -2" stroke="#ec4899" strokeWidth="3.5" strokeLinecap="round" fill="none" />
                             ) : (
                                 <rect x="-8" y="-1.5" width="16" height="3" rx="1.5" fill="#a855f7" opacity="0.8" />
@@ -444,47 +434,52 @@ const ProjectExplainer: React.FC = () => {
 
                         {/* Core Reactor */}
                         <g transform="translate(50, 90)">
-                            <circle cx="0" cy="0" r={isSpeaking ? 14 : tickled ? 16 : 11} fill={tickled ? "#f43f5e" : isSpeaking ? "#22d3ee" : "#a855f7"} filter="url(#neonCore)" opacity="0.9">
+                            <circle cx="0" cy="0" r={isSpeaking ? 14 : conversationActive ? 16 : 11} fill={conversationActive ? "#f43f5e" : isSpeaking ? "#22d3ee" : "#a855f7"} filter="url(#neonCore)" opacity="0.9">
                                 <animate attributeName="r" values="9;14;9" dur="1.5s" repeatCount="indefinite" />
                             </circle>
                             <polygon points="0,-7 6,4 -6,4" fill="#ffffff" transform={isSpeaking ? "rotate(180)" : ""} />
                         </g>
 
                         {/* Arms */}
-                        <g transform={isSpeaking ? "rotate(-18 24 78)" : tickled ? "rotate(-40 24 78)" : ""}>
+                        <g transform={isSpeaking ? "rotate(-18 24 78)" : conversationActive ? "rotate(-40 24 78)" : ""}>
                             <path d="M 22 78 C 8 82 -2 96 4 105" stroke="#475569" strokeWidth="6" strokeLinecap="round" fill="none" />
                             <circle cx="4" cy="105" r="4.5" fill="#a855f7" filter="url(#neonCore)" />
                         </g>
-                        <g transform={isSpeaking ? "rotate(22 76 78)" : tickled ? "rotate(45 76 78)" : "rotate(-10 76 78)"}>
+                        <g transform={isSpeaking ? "rotate(22 76 78)" : conversationActive ? "rotate(45 76 78)" : "rotate(-10 76 78)"}>
                             <path d="M 78 78 C 92 82 102 96 96 105" stroke="#475569" strokeWidth="6" strokeLinecap="round" fill="none" />
                             <circle cx="96" cy="105" r="4.5" fill="#22d3ee" filter="url(#neonCore)" />
                         </g>
                     </svg>
                 </div>
 
-                {/* ── Microphone Button (start conversation) ─────────────── */}
+                {/* Mic button (optional quick toggle) */}
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
-                        if (isListening) {
-                            stopListening();
+                        if (conversationActive) {
+                            stopConversation();
                         } else {
                             startConversation();
                         }
                     }}
-                    className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg flex items-center justify-center border border-white/20 hover:scale-110 transition-transform"
-                    title="Start voice conversation"
+                    className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-purple-600 shadow-lg flex items-center justify-center border border-white/20 hover:scale-110 transition-transform"
+                    title={conversationActive ? "Stop conversation" : "Start conversation"}
                 >
                     {isListening ? (
-                        <MicOff className="w-5 h-5 text-white animate-pulse" />
+                        <MicOff className="w-4 h-4 text-white animate-pulse" />
                     ) : (
-                        <Mic className="w-5 h-5 text-white" />
+                        <Mic className="w-4 h-4 text-white" />
                     )}
                 </button>
 
                 {isListening && (
-                    <div className="absolute -top-2 -right-2 w-10 h-10 rounded-full bg-cyan-400 animate-ping opacity-40" />
+                    <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-cyan-400 animate-ping opacity-40" />
                 )}
+
+                {/* Permanent tooltip */}
+                <div className="absolute top-1/2 -right-24 transform -translate-y-1/2 bg-cyan-500/10 border border-cyan-500/30 text-[9px] uppercase tracking-wider font-extrabold text-cyan-300 px-2 py-1 rounded-md whitespace-nowrap">
+                    Click me! 🎙️
+                </div>
             </div>
 
             <style>{`
