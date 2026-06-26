@@ -83,7 +83,10 @@ const ProjectExplainer: React.FC = () => {
 
     const stopAudio = () => {
         if (sourceRef.current) {
-            try { sourceRef.current.stop(); } catch (e) {}
+            try {
+                sourceRef.current.stop();
+                sourceRef.current.disconnect();   // <-- FIX: fully release audio node
+            } catch (e) {}
             sourceRef.current = null;
         }
         setIsSpeaking(false);
@@ -101,7 +104,6 @@ const ProjectExplainer: React.FC = () => {
                 return match ? match[1] : "";
             };
 
-            // ✅ FIXED URL – now points to the Django backend
             const res = await fetch('http://localhost:8000/api/gtts-robot/', {
                 method: 'POST',
                 headers: {
