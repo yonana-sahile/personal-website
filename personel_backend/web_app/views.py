@@ -1,6 +1,7 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from .services import vector_store
 from .answer_generator import generate_response
@@ -23,9 +24,11 @@ def chat_text(request):
     return Response({'text': answer})
 
 
-# ── Stable Text‑to‑Speech endpoint (uses system espeak) ───────────────────
+# ── Stable Text‑to‑Speech endpoint (no authentication required) ───────────
 @csrf_exempt
 @api_view(['POST'])
+@authentication_classes([])          # disable all authentication
+@permission_classes([AllowAny])      # allow any request
 def tts(request):
     text = request.data.get('text', '')
     lang = request.data.get('lang', 'en')
@@ -46,8 +49,15 @@ def tts(request):
         with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as fp:
             wav_path = fp.name
 
-        # Run espeak to generate speech
-        cmd = ['espeak', '-w', wav_path, '-v', voice, '--', text]
+        # Run espeak with improved voice clarity
+        cmd = [
+            'espeak', '-w', wav_path,
+            '-v', voice,
+            '-s', '150',      # speed: natural pace
+            '-a', '100',      # volume: normal
+            '-p', '50',       # pitch: natural
+            '--', text
+        ]
         subprocess.run(cmd, check=True, capture_output=True)
 
         # Read the generated audio and encode it
