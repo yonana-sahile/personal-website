@@ -13,11 +13,11 @@ export function About() {
           viewport={{ once: true }}
           className="mb-16 flex items-center gap-6"
         >
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-white uppercase tracking-tight flex items-center gap-4">
+          <h2 className="text-4xl md:text-5xl font-display font-bold text-cyber-light uppercase tracking-tight flex items-center gap-4">
             <span className="w-12 h-12 rounded bg-cyber-blue/20 border border-cyber-blue flex items-center justify-center neon-box-blue">
               <span className="text-cyber-blue font-mono text-xl">01</span>
             </span>
-            Intelligence<span className="text-cyber-blue">_</span>
+            ABOUT<span className="text-cyber-blue">_</span>
           </h2>
           <div className="h-[2px] flex-grow bg-gradient-to-r from-cyber-blue via-cyber-purple drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] to-transparent" />
         </motion.div>
@@ -27,7 +27,7 @@ export function About() {
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="md:col-span-7 space-y-6 text-white/80 text-lg leading-relaxed font-sans glass-panel p-8 rounded-2xl relative overflow-hidden group hover:border-cyber-blue/50 transition-colors duration-500"
+            className="md:col-span-7 space-y-6 text-cyber-light/80 text-lg leading-relaxed font-sans glass-panel p-8 rounded-2xl relative overflow-hidden group hover:border-cyber-blue/50 transition-colors duration-500"
           >
             <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-cyber-blue to-cyber-purple group-hover:w-2 transition-all duration-300" />
             <p>
@@ -47,16 +47,16 @@ export function About() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="p-8 glass-panel border-white/10 rounded-2xl hover:border-cyber-pink/70 transition-all duration-300 group neon-box-pink hover:-translate-y-2 relative overflow-hidden"
+              className="p-8 glass-panel border-cyber-light/10 rounded-2xl hover:border-cyber-pink/70 transition-all duration-300 group neon-box-pink hover:-translate-y-2 relative overflow-hidden"
             >
               <div className="absolute -right-10 -top-10 w-32 h-32 bg-cyber-pink/20 rounded-full blur-2xl group-hover:bg-cyber-pink/40 transition-colors" />
               <div className="flex items-center gap-4 mb-4 relative z-10">
                 <div className="p-3 rounded-lg bg-cyber-pink/20 border border-cyber-pink text-cyber-pink group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(255,0,85,0.4)]">
                   <ShieldAlert size={28} />
                 </div>
-                <h3 className="font-display font-bold text-2xl text-white uppercase tracking-wider">Offensive Auth</h3>
+                <h3 className="font-display font-bold text-2xl text-cyber-light uppercase tracking-wider">Offensive Auth</h3>
               </div>
-              <p className="text-white/60 font-mono text-sm relative z-10 leading-relaxed">Conducting advanced penetration testing, vulnerability assessments, and implementing zero-trust architectures.</p>
+              <p className="text-cyber-light/60 font-mono text-sm relative z-10 leading-relaxed">Conducting advanced penetration testing, vulnerability assessments, and implementing zero-trust architectures.</p>
             </motion.div>
 
             <motion.div
@@ -64,16 +64,16 @@ export function About() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.4 }}
-              className="p-8 glass-panel border-white/10 rounded-2xl hover:border-cyber-blue/70 transition-all duration-300 group neon-box-blue hover:-translate-y-2 relative overflow-hidden"
+              className="p-8 glass-panel border-cyber-light/10 rounded-2xl hover:border-cyber-blue/70 transition-all duration-300 group neon-box-blue hover:-translate-y-2 relative overflow-hidden"
             >
               <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-blue/20 rounded-full blur-2xl group-hover:bg-cyber-blue/40 transition-colors" />
               <div className="flex items-center gap-4 mb-4 relative z-10">
                 <div className="p-3 rounded-lg bg-cyber-blue/20 border border-cyber-blue text-cyber-blue group-hover:scale-110 transition-transform shadow-[0_0_15px_rgba(0,240,255,0.4)]">
                   <Terminal size={28} />
                 </div>
-                <h3 className="font-display font-bold text-2xl text-white uppercase tracking-wider">System Eng</h3>
+                <h3 className="font-display font-bold text-2xl text-cyber-light uppercase tracking-wider">System Eng</h3>
               </div>
-              <p className="text-white/60 font-mono text-sm relative z-10 leading-relaxed">Architecting scalable backends, intuitive frontends, and deploying resilient cloud infrastructure.</p>
+              <p className="text-cyber-light/60 font-mono text-sm relative z-10 leading-relaxed">Architecting scalable backends, intuitive frontends, and deploying resilient cloud infrastructure.</p>
             </motion.div>
           </div>
         </div>
