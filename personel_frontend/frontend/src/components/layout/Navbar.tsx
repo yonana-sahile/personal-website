@@ -8,7 +8,7 @@ const navItems = [
   { name: 'ABOUT', href: '#about' },
   { name: 'PROTOCOLS', href: '#skills' },
   { name: 'PROJECTS', href: '#projects' },
-  { name: 'SECURE_COMMS', href: '#contact' },
+  { name: 'CONTACT', href: '#contact' },
 ];
 
 export function Navbar() {
