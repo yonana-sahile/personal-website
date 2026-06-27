@@ -5,7 +5,7 @@ import { ViewerScanner } from '../ui/ViewerScanner';
 import { CVManagerModal } from '../ui/CVManagerModal';
 
 const navItems = [
-  { name: 'INITIALIZE', href: '#about' },
+  { name: 'ABOUT', href: '#about' },
   { name: 'PROTOCOLS', href: '#skills' },
   { name: 'PROJECTS', href: '#projects' },
   { name: 'SECURE_COMMS', href: '#contact' },
