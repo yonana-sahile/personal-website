@@ -8,6 +8,21 @@ export function Contact() {
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col items-center text-center relative z-10">
         <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="mb-16 flex items-center gap-6 w-full"
+        >
+          <h2 className="text-4xl md:text-5xl font-display font-bold text-cyber-light uppercase tracking-tight flex items-center gap-4">
+            <span className="w-12 h-12 rounded bg-cyber-pink/20 border border-cyber-pink flex items-center justify-center neon-box-pink">
+              <span className="text-cyber-pink font-mono text-xl">04</span>
+            </span>
+            CONTACT<span className="text-cyber-pink">_</span>
+          </h2>
+          <div className="h-[2px] flex-grow bg-gradient-to-r from-cyber-pink via-cyber-purple drop-shadow-[0_0_8px_rgba(255,0,85,0.8)] to-transparent" />
+        </motion.div>
+
+        <motion.div
            initial={{ opacity: 0, scale: 0.9 }}
            whileInView={{ opacity: 1, scale: 1 }}
            viewport={{ once: true }}
@@ -26,11 +41,11 @@ export function Contact() {
             Establish Connection
           </h2>
 
-          <h3 className="font-display font-bold text-5xl md:text-7xl text-white mb-8 tracking-tighter uppercase uppercase">
+          <h3 className="font-display font-bold text-5xl md:text-7xl text-cyber-light mb-8 tracking-tighter uppercase uppercase">
             Initiate <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-pink to-cyber-purple">Handshake</span>
           </h3>
 
-          <p className="text-white/60 text-base md:text-lg font-sans leading-relaxed mb-12">
+          <p className="text-cyber-light/60 text-base md:text-lg font-sans leading-relaxed mb-12">
             Whether you need to fortify your architecture against modern threats or build resilient, highly scalable infrastructure from the ground up, my comms channel is open.
           </p>
 
@@ -46,20 +61,20 @@ export function Contact() {
           </a>
 
           <div className="mt-16 flex justify-center gap-8">
-            <a href="#" className="p-4 border border-cyber-border rounded-full text-white/50 hover:text-cyber-blue hover:border-cyber-blue hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] hover:-translate-y-2 transition-all duration-300">
+            <a href="#" className="p-4 border border-cyber-border rounded-full text-cyber-light/50 hover:text-cyber-blue hover:border-cyber-blue hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] hover:-translate-y-2 transition-all duration-300">
               <Github className="w-6 h-6" />
             </a>
-            <a href="#" className="p-4 border border-cyber-border rounded-full text-white/50 hover:text-cyber-green hover:border-cyber-green hover:shadow-[0_0_15px_rgba(0,255,65,0.5)] hover:-translate-y-2 transition-all duration-300">
+            <a href="#" className="p-4 border border-cyber-border rounded-full text-cyber-light/50 hover:text-cyber-green hover:border-cyber-green hover:shadow-[0_0_15px_rgba(0,255,65,0.5)] hover:-translate-y-2 transition-all duration-300">
               <Linkedin className="w-6 h-6" />
             </a>
-            <a href="#" className="p-4 border border-cyber-border rounded-full text-white/50 hover:text-cyber-purple hover:border-cyber-purple hover:shadow-[0_0_15px_rgba(157,0,255,0.5)] hover:-translate-y-2 transition-all duration-300">
+            <a href="#" className="p-4 border border-cyber-border rounded-full text-cyber-light/50 hover:text-cyber-purple hover:border-cyber-purple hover:shadow-[0_0_15px_rgba(157,0,255,0.5)] hover:-translate-y-2 transition-all duration-300">
               <Twitter className="w-6 h-6" />
             </a>
           </div>
         </motion.div>
       </div>
 
-      <footer className="mt-32 relative z-10 w-full border-t border-cyber-border bg-black/40 backdrop-blur-md">
+      <footer className="mt-32 relative z-10 w-full border-t border-cyber-border bg-cyber-dark/40 backdrop-blur-md">
         <div className="w-full absolute top-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         <div className="max-w-7xl mx-auto py-8 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
            <div className="flex items-center gap-4">
@@ -70,7 +85,7 @@ export function Contact() {
            </div>
 
            <div className="flex items-center">
-             <p className="text-[10px] font-mono text-white/40 tracking-widest uppercase">
+             <p className="text-[10px] font-mono text-cyber-light/40 tracking-widest uppercase">
                 &gt; YONAS SAHILE V3.0 // &copy; {new Date().getFullYear()} ALL RIGHTS SECURED.
              </p>
            </div>
