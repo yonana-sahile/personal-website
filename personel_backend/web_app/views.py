@@ -12,7 +12,7 @@ import os
 from gtts import gTTS
 
 
-# ── Existing AI Chat endpoint ─────────────────────────────────────────────
+# ── Text Chat endpoint ────────────────────────────────────────────────────────
 @api_view(['POST'])
 def chat_text(request):
     message = request.data.get('message', '').strip()
@@ -24,26 +24,47 @@ def chat_text(request):
     return Response({'text': answer})
 
 
-# ── High‑quality Text‑to‑Speech endpoint (uses gTTS) ─────────────────────
+# ── Text-to-Speech endpoint ───────────────────────────────────────────────────
 @csrf_exempt
 @api_view(['POST'])
-@authentication_classes([])          # disable all authentication
-@permission_classes([AllowAny])      # allow any request
-def tts(request):
-    text = request.data.get('text', '')
-    lang = request.data.get('lang', 'en')
+@authentication_classes([])
+@permission_classes([AllowAny])
+def gtts_robot(request):
+    """
+    Accepts { text: str, lang: str }
+    Returns  { audio_base64: str }
+    Lang codes: en, am, om, ti
+    gTTS supported: en=English, am=Amharic, om=Oromo, ti=Tigrinya
+    """
+    text = request.data.get('text', '').strip()
+    lang = request.data.get('lang', 'en').strip()
+
     if not text:
-        return Response({'error': 'Text required'}, status=400)
+        return Response({'error': 'Text is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Map short codes to gTTS language codes
+    LANG_MAP = {
+        'en': 'en',
+        'am': 'am',
+        'om': 'om',
+        'ti': 'ti',
+    }
+    gtts_lang = LANG_MAP.get(lang, 'en')
 
     try:
-        tts = gTTS(text=text, lang=lang)
+        tts_obj = gTTS(text=text, lang=gtts_lang, slow=False)
+
         with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as fp:
-            tts.save(fp.name)
-            fp.seek(0)
-            audio_bytes = fp.read()
-        os.unlink(fp.name)
+            tts_obj.save(fp.name)
+            tmp_path = fp.name
+
+        with open(tmp_path, 'rb') as f:
+            audio_bytes = f.read()
+
+        os.unlink(tmp_path)
 
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         return Response({'audio_base64': audio_base64})
+
     except Exception as e:
-        return Response({'error': str(e)}, status=500)
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
