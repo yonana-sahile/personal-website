@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.conf import settings
 from .services import vector_store
 from .answer_generator import generate_response
 
@@ -66,5 +68,31 @@ def gtts_robot(request):
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         return Response({'audio_base64': audio_base64})
 
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# ── Contact Form endpoint (sends email) ──────────────────────────────────────
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def contact(request):
+    name = request.data.get('name', '').strip()
+    email = request.data.get('email', '').strip()
+    message = request.data.get('message', '').strip()
+
+    if not email or not message:
+        return Response({'error': 'Email and message are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        send_mail(
+            subject=f'Portfolio Message from {name or email}',
+            message=f'From: {name} ({email})\n\n{message}',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.CONTACT_EMAIL],
+            fail_silently=False,
+        )
+        return Response({'success': True})
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
