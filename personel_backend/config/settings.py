@@ -110,3 +110,11 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOW_CREDENTIALS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your_email@gmail.com'          # replace with yours
+EMAIL_HOST_PASSWORD = 'your_app_password'         # Gmail App Password
+DEFAULT_FROM_EMAIL = 'your_email@gmail.com'
+CONTACT_EMAIL = 'your_email@gmail.com'            # where messages go
