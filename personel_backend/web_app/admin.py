@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import ContactMessage, Project, CV
+from .models import ContactMessage, Project, CV,Certificate
+
 
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
@@ -15,3 +16,6 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(CV)
 class CVAdmin(admin.ModelAdmin):
     list_display = ('id', 'updated_at')
+@admin.register(Certificate)
+class CertificateAdmin(admin.ModelAdmin):
+    list_display = ('title', 'issuer', 'date', 'created_at')
