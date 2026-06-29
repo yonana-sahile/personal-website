@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { ViewerScanner } from '../ui/ViewerScanner';
 import { CVManagerModal } from '../ui/CVManagerModal';
 import { CertificateManagerModal } from '../ui/CertificateManagerModal';
+import { DigitalClock } from '../ui/DigitalClock';   // 👈 re-added
 
 const navItems = [
   { name: 'ABOUT', href: '#about' },
@@ -44,7 +45,7 @@ export function Navbar() {
       }
     };
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
+    handleScroll();
 
     // Check initial theme
     if (document.documentElement.classList.contains('light')) {
@@ -112,6 +113,9 @@ export function Navbar() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6">
+          {/* 🔹 Digital Clock (compact) */}
+          <DigitalClock compact />
+
           {navItems.map((item, i) => (
             <motion.a
               key={item.name}
@@ -217,6 +221,10 @@ export function Navbar() {
           className="md:hidden bg-cyber-dark/95 backdrop-blur-xl border-b border-cyber-blue/30 overflow-hidden"
         >
           <div className="flex flex-col px-6 py-6 gap-6">
+            {/* 🔹 Digital Clock in mobile menu */}
+            <div className="flex justify-center mb-2">
+              <DigitalClock compact />
+            </div>
             {navItems.map((item, i) => (
               <motion.a
                 initial={{ x: -20, opacity: 0 }}
