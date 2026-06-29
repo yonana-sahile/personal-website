@@ -31,3 +31,13 @@ class CV(models.Model):
 
     def __str__(self):
         return f'CV updated at {self.updated_at}'
+class Certificate(models.Model):
+    title = models.CharField(max_length=200)
+    issuer = models.CharField(max_length=200)
+    date = models.DateField()
+    url = models.URLField(blank=True, default='')
+    image = models.TextField(blank=True)          # base64 image
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
