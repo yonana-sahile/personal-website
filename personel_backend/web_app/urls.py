@@ -8,6 +8,8 @@ urlpatterns = [
 
     # Auth
     path('auth/login/', views.login_view, name='login'),
+    path('auth/forgot-password/', views.forgot_password, name='forgot_password'),   # new
+    path('auth/reset-password/', views.reset_password, name='reset_password'),     # new
 
     # Projects (public list, protected add/delete)
     path('projects/', views.list_projects, name='list_projects'),
@@ -17,4 +19,7 @@ urlpatterns = [
     # CV (public get, protected upload)
     path('cv/', views.get_cv, name='get_cv'),
     path('cv/upload/', views.upload_cv, name='upload_cv'),
+    path('certificates/', views.list_certificates, name='list_certificates'),
+    path('certificates/add/', views.add_certificate, name='add_certificate'),
+    path('certificates/<int:pk>/delete/', views.delete_certificate, name='delete_certificate'),
 ]
