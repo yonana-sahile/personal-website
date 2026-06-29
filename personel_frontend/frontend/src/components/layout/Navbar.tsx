@@ -1,12 +1,15 @@
 import { motion } from 'motion/react';
-import { Menu, X, Terminal, ScanEye, Sun, Moon, Download, Upload } from 'lucide-react';
+import { Menu, X, Terminal, ScanEye, Sun, Moon, Download, Upload, Award, Settings, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ViewerScanner } from '../ui/ViewerScanner';
 import { CVManagerModal } from '../ui/CVManagerModal';
+import { CertificateManagerModal } from '../ui/CertificateManagerModal';
 
 const navItems = [
   { name: 'ABOUT', href: '#about' },
   { name: 'PROTOCOLS', href: '#skills' },
+  { name: 'EXPERIENCE', href: '#experience' },
+  { name: 'CERTS', href: '#certificates' },
   { name: 'PROJECTS', href: '#projects' },
   { name: 'CONTACT', href: '#contact' },
 ];
@@ -18,19 +21,38 @@ export function Navbar() {
   const [isLightMode, setIsLightMode] = useState(false);
   const [cvUrl, setCvUrl] = useState('');
   const [isCVModalOpen, setIsCVModalOpen] = useState(false);
+  const [isCertModalOpen, setIsCertModalOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+
+  const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+
+      const sections = ['home', 'about', 'skills', 'experience', 'certificates', 'projects', 'contact'];
+      const scrollPosition = window.scrollY + window.innerHeight / 3;
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { top } = element.getBoundingClientRect();
+          const offsetTop = top + window.scrollY;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + element.offsetHeight) {
+            setActiveSection(section);
+          }
+        }
+      }
     };
     window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
 
     // Check initial theme
     if (document.documentElement.classList.contains('light')) {
       setIsLightMode(true);
     }
 
-    fetch('/api/cv')
+    // Fetch CV URL from Django backend
+    fetch('http://localhost:8000/api/cv/')
       .then(res => res.json())
       .then(data => {
         if (data && data.url) {
@@ -60,6 +82,7 @@ export function Navbar() {
     >
       <ViewerScanner isOpen={showViewer} onClose={() => setShowViewer(false)} />
       <CVManagerModal isOpen={isCVModalOpen} onClose={() => setIsCVModalOpen(false)} onCVUploaded={(url) => setCvUrl(url)} />
+      <CertificateManagerModal isOpen={isCertModalOpen} onClose={() => setIsCertModalOpen(false)} onCertificateUploaded={() => window.location.reload()} />
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex justify-between items-center">
         <motion.div
@@ -96,13 +119,13 @@ export function Navbar() {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="relative px-3 py-2 text-[11px] font-mono tracking-[0.2em] text-cyber-light/70 hover:text-cyber-blue transition-colors group"
+              className={`relative px-3 py-2 text-[11px] font-mono tracking-[0.2em] transition-colors group ${activeSection === item.href.substring(1) ? 'text-cyber-blue' : 'text-cyber-light/70 hover:text-cyber-blue'}`}
             >
               <span className="relative z-10">{item.name}</span>
               <motion.div
-                className="absolute bottom-0 left-0 h-[2px] bg-cyber-blue rounded w-0 group-hover:w-full transition-all duration-300"
+                className={`absolute bottom-0 left-0 h-[2px] bg-cyber-blue rounded transition-all duration-300 ${activeSection === item.href.substring(1) ? 'w-full shadow-[0_0_8px_#00f0ff]' : 'w-0 group-hover:w-full'}`}
               />
-              <div className="absolute inset-0 bg-cyber-blue/10 rounded scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-300 blur-sm" />
+              <div className={`absolute inset-0 bg-cyber-blue/10 rounded transition-all duration-300 blur-sm ${activeSection === item.href.substring(1) ? 'scale-100 opacity-100' : 'scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100'}`} />
             </motion.a>
           ))}
           <div className="flex items-center gap-2 ml-2">
@@ -116,13 +139,39 @@ export function Navbar() {
                 <Download className="w-3 h-3" /> CV
               </a>
             )}
-            <button
-              onClick={() => setIsCVModalOpen(true)}
-              className="flex items-center justify-center w-7 h-7 border border-cyber-pink text-cyber-pink rounded hover:bg-cyber-pink hover:text-black transition-colors neon-box-pink"
-              title="Upload CV"
-            >
-              <Upload className="w-3 h-3" />
-            </button>
+
+            <div className="relative">
+              <button
+                onClick={() => setIsAdminMenuOpen(!isAdminMenuOpen)}
+                className="flex items-center gap-2 px-3 py-1.5 border border-cyber-blue text-cyber-blue text-[10px] font-mono tracking-widest uppercase rounded hover:bg-cyber-blue hover:text-black transition-colors neon-box-blue ml-2"
+              >
+                <Settings className="w-3 h-3" /> ADMIN <ChevronDown className={`w-3 h-3 transition-transform ${isAdminMenuOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isAdminMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-cyber-dark/95 backdrop-blur-xl border border-cyber-blue/30 rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.1)] overflow-hidden z-50 py-2">
+                  <button
+                    onClick={() => {
+                      setIsCVModalOpen(true);
+                      setIsAdminMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-mono tracking-[0.1em] text-cyber-light/70 hover:text-cyber-pink hover:bg-cyber-pink/10 transition-colors text-left"
+                  >
+                    <Upload className="w-4 h-4" /> Upload CV
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsCertModalOpen(true);
+                      setIsAdminMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-mono tracking-[0.1em] text-cyber-light/70 hover:text-cyber-green hover:bg-cyber-green/10 transition-colors text-left"
+                  >
+                    <Award className="w-4 h-4" /> Upload Cert
+                  </button>
+                </div>
+              )}
+            </div>
+
             <button
                onClick={toggleTheme}
                className="ml-2 p-2 text-cyber-blue hover:text-cyber-pink transition-colors border border-cyber-blue/20 hover:border-cyber-pink/50 rounded-full neon-box-blue hover:neon-box-pink"
@@ -145,13 +194,6 @@ export function Navbar() {
               <Download className="w-4 h-4" />
             </a>
           )}
-          <button
-            onClick={() => setIsCVModalOpen(true)}
-            className="p-1.5 border border-cyber-pink text-cyber-pink rounded hover:bg-cyber-pink hover:text-black transition-colors neon-box-pink"
-            title="Upload CV"
-          >
-            <Upload className="w-4 h-4" />
-          </button>
           <button
              onClick={toggleTheme}
              className="p-1.5 text-cyber-blue hover:text-cyber-pink transition-colors border border-cyber-blue/20 rounded-full"
@@ -183,12 +225,42 @@ export function Navbar() {
                 key={item.name}
                 href={item.href}
                 onClick={() => setIsOpen(false)}
-                className="text-xs font-mono tracking-[0.2em] text-cyber-blue hover:text-cyber-light flex items-center gap-3"
+                className={`text-xs font-mono tracking-[0.2em] flex items-center gap-3 transition-colors ${activeSection === item.href.substring(1) ? 'text-cyber-light bg-cyber-blue/10 px-4 py-2 rounded border-l-2 border-cyber-blue shadow-[inset_0_0_10px_rgba(0,240,255,0.1)]' : 'text-cyber-blue hover:text-cyber-light px-4 py-2'}`}
               >
                 <Terminal className="w-4 h-4" />
                 {item.name}
               </motion.a>
             ))}
+
+            <div className="h-[1px] bg-cyber-blue/20 w-full my-2"></div>
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-col gap-4"
+            >
+              <span className="text-[10px] font-mono tracking-[0.3em] text-cyber-light/40 uppercase">Admin Operations</span>
+              <button
+                onClick={() => {
+                  setIsCVModalOpen(true);
+                  setIsOpen(false);
+                }}
+                className="text-xs font-mono tracking-[0.2em] text-cyber-pink hover:text-cyber-light flex items-center gap-3 w-fit"
+              >
+                <Upload className="w-4 h-4" />
+                UPLOAD CV
+              </button>
+              <button
+                onClick={() => {
+                  setIsCertModalOpen(true);
+                  setIsOpen(false);
+                }}
+                className="text-xs font-mono tracking-[0.2em] text-cyber-green hover:text-cyber-light flex items-center gap-3 w-fit"
+              >
+                <Award className="w-4 h-4" />
+                UPLOAD CERT
+              </button>
+            </motion.div>
           </div>
         </motion.div>
       )}
