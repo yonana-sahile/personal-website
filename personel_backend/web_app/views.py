@@ -10,10 +10,13 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from .services import vector_store
 from .answer_generator import generate_response
-from .models import Project, CV
-from .serializers import ProjectSerializer, CVSerializer
+from .models import Project, CV,Certificate
+from .serializers import ProjectSerializer, CVSerializer, CertificateSerializer
+
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
 
 import tempfile
 import base64
@@ -168,3 +171,62 @@ def upload_cv(request):
     cv.url = url
     cv.save()
     return Response({'url': cv.url})
+# ── Dummy Forgot Password endpoint ───────────────────────────────────────────
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    phone = request.data.get('phone', '')
+    if phone == '0967005077':
+        return Response({'message': 'OTP sent to your phone (use 123456 for testing)'})
+    return Response({'error': 'Phone number not recognized'}, status=400)
+
+
+# ── Dummy Reset Password endpoint ────────────────────────────────────────────
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([])
+@permission_classes([AllowAny])
+def reset_password(request):
+    phone = request.data.get('phone', '')
+    otp = request.data.get('otp', '')
+    new_password = request.data.get('newPassword', '')
+
+    if phone == '0967005077' and otp == '123456':
+        # Update the password for the user 'yonassahile'
+        user = User.objects.get(username='yonassahile')
+        user.set_password(new_password)
+        user.save()
+        return Response({'success': True})
+    return Response({'error': 'Invalid phone or OTP'}, status=400)
+@api_view(['GET'])
+def list_certificates(request):
+    certs = Certificate.objects.all().order_by('-created_at')
+    serializer = CertificateSerializer(certs, many=True)
+    return Response(serializer.data)
+
+# Protected: add a certificate
+@csrf_exempt
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def add_certificate(request):
+    serializer = CertificateSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+# Protected: delete a certificate
+@csrf_exempt
+@api_view(['DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_certificate(request, pk):
+    try:
+        cert = Certificate.objects.get(pk=pk)
+        cert.delete()
+        return Response({'success': True})
+    except Certificate.DoesNotExist:
+        return Response({'error': 'Certificate not found'}, status=404)
