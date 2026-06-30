@@ -72,7 +72,7 @@ export function Contact() {
             transition={{ duration: 0.6 }}
             className="lg:col-span-5 flex flex-col gap-6"
           >
-            {/* Large Profile Image – ALWAYS CLEAR */}
+            {/* Large Profile Image – ALWAYS CLEAR (no hover effects) */}
             <div className="relative w-full h-[400px] lg:min-h-[450px] lg:flex-grow rounded-3xl overflow-hidden border border-cyber-blue/30 shadow-[0_0_40px_rgba(0,240,255,0.1)]">
               <img
                 src="/profile.jpg"
@@ -117,17 +117,18 @@ export function Contact() {
               </a>
             </div>
 
-            {/* Social Nodes – 4‑column grid */}
-            <div className="grid grid-cols-4 gap-2 relative z-10">
+            {/* Social Nodes – redesigned with brand colors */}
+            <div className="grid grid-cols-4 gap-3 relative z-10">
               {[
-                { icon: Github, name: 'GitHub', color: 'group-hover:text-cyber-light group-hover:border-cyber-light group-hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]' },
-                { icon: Facebook, name: 'Facebook', color: 'group-hover:text-cyber-blue group-hover:border-cyber-blue group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]' },
-                { icon: Send, name: 'Telegram', color: 'group-hover:text-cyber-green group-hover:border-cyber-green group-hover:shadow-[0_0_15px_rgba(0,255,65,0.4)]' },
-                { icon: Twitter, name: 'Twitter', color: 'group-hover:text-cyber-blue group-hover:border-cyber-blue group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]' }
+                { icon: Github, name: 'GitHub', color: 'group-hover:text-white', border: 'group-hover:border-white/50 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.2)]', bg: 'group-hover:bg-white/10' },
+                { icon: Facebook, name: 'Facebook', color: 'group-hover:text-[#1877F2]', border: 'group-hover:border-[#1877F2]/50 group-hover:shadow-[0_0_15px_rgba(24,119,242,0.2)]', bg: 'group-hover:bg-[#1877F2]/10' },
+                { icon: Send, name: 'Telegram', color: 'group-hover:text-[#0088cc]', border: 'group-hover:border-[#0088cc]/50 group-hover:shadow-[0_0_15px_rgba(0,136,204,0.2)]', bg: 'group-hover:bg-[#0088cc]/10' },
+                { icon: Twitter, name: 'Twitter', color: 'group-hover:text-[#1DA1F2]', border: 'group-hover:border-[#1DA1F2]/50 group-hover:shadow-[0_0_15px_rgba(29,161,242,0.2)]', bg: 'group-hover:bg-[#1DA1F2]/10' }
               ].map((social) => (
-                 <a key={social.name} href="#" title={social.name} className={`flex flex-col items-center justify-center gap-2 p-3 border border-white/10 rounded-xl text-cyber-light/50 bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60`}>
-                    <social.icon className={`w-5 h-5 transition-colors duration-300 ${social.color}`} />
-                    <span className="text-[8px] font-mono tracking-widest uppercase hidden sm:block">{social.name}</span>
+                 <a key={social.name} href="#" title={social.name} className={`relative flex flex-col items-center justify-center gap-2 p-4 border border-white/10 rounded-2xl text-cyber-light/50 bg-black/40 backdrop-blur-md transition-all duration-300 group overflow-hidden ${social.border}`}>
+                    <div className={`absolute inset-0 opacity-0 transition-opacity duration-300 ${social.bg}`} />
+                    <social.icon className={`w-6 h-6 relative z-10 transition-all duration-300 group-hover:scale-110 ${social.color}`} />
+                    <span className={`text-[9px] font-mono tracking-widest uppercase hidden sm:block relative z-10 transition-colors duration-300 ${social.color}`}>{social.name}</span>
                  </a>
               ))}
             </div>
