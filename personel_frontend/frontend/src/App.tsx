@@ -8,10 +8,18 @@ import { Projects } from './components/sections/Projects';
 import { Contact } from './components/sections/Contact';
 import { CyberBackground } from './components/ui/CyberBackground';
 import { AIAssistantWidget } from './components/ui/AIAssistantWidget';
+import { BootSequence } from './components/ui/BootSequence';
+import { CustomCursor } from './components/ui/CustomCursor';
+import { ScrollProgress } from './components/ui/ScrollProgress';
+import { FloatingNav } from './components/ui/FloatingNav';
 
 export default function App() {
   return (
     <div className="min-h-screen text-cyber-light selection:bg-cyber-blue selection:text-black overflow-x-hidden relative">
+      <BootSequence />
+      <CustomCursor />
+      <ScrollProgress />
+      <FloatingNav />
       <CyberBackground />
       <Navbar />
       <main className="relative z-10 w-full flex flex-col">
