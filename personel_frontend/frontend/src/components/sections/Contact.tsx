@@ -1,5 +1,8 @@
 import { motion } from 'motion/react';
-import { Github, Twitter, Facebook, Send, Network, Mail, User, MessageSquare } from 'lucide-react';
+import {
+  Github, Twitter, Facebook, Send, Network, Mail, User, MessageSquare,
+  Terminal, ShieldCheck, Activity, MapPin, Globe, Cpu, Fingerprint, Radar
+} from 'lucide-react';
 import { useState } from 'react';
 
 export function Contact() {
@@ -33,11 +36,14 @@ export function Contact() {
 
   return (
     <section id="contact" className="py-32 relative overflow-hidden">
-      <div className="absolute top-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-pink drop-shadow-[0_0_10px_rgba(255,0,85,0.8)] to-transparent" />
+      <div className="absolute top-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyber-blue drop-shadow-[0_0_10px_rgba(0,240,255,0.8)] to-transparent" />
 
       {/* Ambient background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[800px] h-[800px] bg-cyber-pink/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-cyber-purple/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-[1000px] h-[600px] bg-cyber-blue/10 rounded-full blur-[150px] pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-cyber-green/5 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Grid pattern background */}
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
 
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col items-center text-center relative z-10">
         <motion.div
@@ -47,151 +53,175 @@ export function Contact() {
           className="mb-16 flex items-center gap-6 w-full"
         >
           <h2 className="text-4xl md:text-5xl font-display font-bold text-cyber-light uppercase tracking-tight flex items-center gap-4">
-            <span className="w-12 h-12 rounded bg-cyber-pink/20 border border-cyber-pink flex items-center justify-center neon-box-pink">
-              <span className="text-cyber-pink font-mono text-xl">04</span>
+            <span className="w-12 h-12 rounded bg-cyber-blue/20 border border-cyber-blue flex items-center justify-center neon-box-blue">
+              <span className="text-cyber-blue font-mono text-xl">04</span>
             </span>
-            CONTACT<span className="text-cyber-pink">_</span>
+            CONTACT<span className="text-cyber-blue">_</span>
           </h2>
-          <div className="h-[2px] flex-grow bg-gradient-to-r from-cyber-pink via-cyber-purple drop-shadow-[0_0_8px_rgba(255,0,85,0.8)] to-transparent" />
+          <div className="h-[2px] flex-grow bg-gradient-to-r from-cyber-blue via-cyber-green drop-shadow-[0_0_8px_rgba(0,240,255,0.8)] to-transparent" />
         </motion.div>
 
-        <motion.div
-           initial={{ opacity: 0, scale: 0.95, y: 20 }}
-           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-           viewport={{ once: true }}
-           transition={{ duration: 0.8, ease: "easeOut" }}
-           className="flex flex-col md:flex-row w-full max-w-5xl bg-cyber-dark/60 backdrop-blur-xl rounded-3xl border border-white/5 shadow-2xl shadow-cyber-pink/5 overflow-hidden text-left relative"
-        >
-          {/* Decorative tech lines */}
-          <div className="absolute -right-10 top-20 w-40 h-[1px] bg-cyber-pink/30 rotate-45 pointer-events-none" />
-          <div className="absolute -right-10 top-24 w-40 h-[1px] bg-cyber-purple/30 rotate-45 pointer-events-none" />
+        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
 
-          <div className="w-full md:w-5/12 p-10 md:p-14 bg-gradient-to-br from-cyber-dark to-black border-r border-white/5 flex flex-col justify-between relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyber-pink via-cyber-purple to-cyber-blue opacity-50 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute -left-20 -top-20 w-64 h-64 bg-cyber-pink/10 rounded-full blur-[80px] pointer-events-none" />
+          {/* Left Column: ID Card & Radar */}
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-5 flex flex-col gap-6"
+          >
+            {/* Large Profile Image – ALWAYS CLEAR */}
+            <div className="relative w-full h-[400px] lg:h-auto lg:flex-grow rounded-3xl overflow-hidden border border-cyber-blue/30 shadow-[0_0_40px_rgba(0,240,255,0.1)]">
+              {/* ❌ Removed overlay that caused the blue tint */}
+              <img
+                src="/profile.jpg"
+                alt="Yonas Sahile"
+                className="absolute inset-0 w-full h-full object-cover filter contrast-[1.1]"
+              />
 
-            <div className="relative z-10">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                className="inline-flex items-center justify-center mb-10 p-4 rounded-2xl bg-cyber-pink/5 border border-cyber-pink/30 text-cyber-pink shadow-[0_0_15px_rgba(255,0,85,0.2)]"
-              >
-                <Network size={36} className="opacity-80" />
-              </motion.div>
-
-              <h2 className="text-[10px] font-mono tracking-[0.4em] text-cyber-pink/80 uppercase mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-cyber-pink animate-pulse" />
-                Encrypted Channel
-              </h2>
-
-              <h3 className="font-display font-bold text-4xl lg:text-5xl text-cyber-light mb-6 tracking-tighter uppercase leading-tight">
-                Initiate <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-pink to-cyber-purple drop-shadow-sm">Handshake</span>
-              </h3>
-
-              <p className="text-cyber-light/50 text-sm font-sans leading-relaxed mb-8 max-w-sm">
-                Connect directly through my encrypted comms channel. Whether for project inquiries or technical discussions, I'm ready to receive your transmission.
-              </p>
+              <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-20">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-cyber-green animate-pulse shadow-[0_0_8px_rgba(0,255,65,0.8)]" />
+                  <span className="text-[10px] font-mono tracking-[0.2em] text-cyber-green uppercase">Online // Ready to Connect</span>
+                </div>
+                <h3 className="font-display font-bold text-3xl text-cyber-light tracking-tighter uppercase">
+                  Yonas Sahile
+                </h3>
+              </div>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-4 relative z-10">
+            {/* Social Nodes (unchanged) */}
+            <div className="grid grid-cols-2 gap-3 relative z-10">
               {[
-                { icon: Github, name: 'GitHub', color: 'hover:text-cyber-blue hover:border-cyber-blue hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] hover:bg-cyber-blue/10' },
-                { icon: Facebook, name: 'Facebook', color: 'hover:text-cyber-blue hover:border-cyber-blue hover:shadow-[0_0_15px_rgba(0,240,255,0.5)] hover:bg-cyber-blue/10' },
-                { icon: Send, name: 'Telegram', color: 'hover:text-cyber-purple hover:border-cyber-purple hover:shadow-[0_0_15px_rgba(157,0,255,0.5)] hover:bg-cyber-purple/10' },
-                { icon: Twitter, name: 'Twitter', color: 'hover:text-cyber-pink hover:border-cyber-pink hover:shadow-[0_0_15px_rgba(255,0,85,0.5)] hover:bg-cyber-pink/10' }
+                { icon: Github, name: 'GitHub', color: 'group-hover:text-cyber-light group-hover:border-cyber-light group-hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]' },
+                { icon: Facebook, name: 'Facebook', color: 'group-hover:text-cyber-blue group-hover:border-cyber-blue group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]' },
+                { icon: Send, name: 'Telegram', color: 'group-hover:text-cyber-green group-hover:border-cyber-green group-hover:shadow-[0_0_15px_rgba(0,255,65,0.4)]' },
+                { icon: Twitter, name: 'Twitter', color: 'group-hover:text-cyber-blue group-hover:border-cyber-blue group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]' }
               ].map((social) => (
-                 <a key={social.name} href="#" title={social.name} className={`p-3.5 border border-white/5 rounded-2xl text-cyber-light/40 bg-white/[0.02] ${social.color} hover:-translate-y-1 transition-all duration-300 backdrop-blur-sm group/icon`}>
-                    <social.icon className="w-5 h-5 group-hover/icon:scale-110 transition-transform" />
+                 <a key={social.name} href="#" title={social.name} className={`flex items-center gap-3 p-4 border border-white/10 rounded-2xl text-cyber-light/50 bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60`}>
+                    <social.icon className={`w-5 h-5 transition-colors duration-300 ${social.color}`} />
+                    <span className="text-[10px] font-mono tracking-widest uppercase">{social.name}</span>
                  </a>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          <div className="w-full md:w-7/12 p-10 md:p-14 bg-black/20 relative z-10">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-6 h-full justify-center">
-              <div className="group relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-cyber-light/30 group-focus-within:text-cyber-pink transition-colors duration-300" />
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="IDENTIFIER [NAME]"
-                  className="w-full bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-cyber-light font-mono text-sm focus:border-cyber-pink focus:bg-cyber-pink/5 focus:outline-none focus:ring-4 focus:ring-cyber-pink/10 transition-all duration-300 placeholder:text-cyber-light/30"
-                />
+          {/* Right Column: Terminal Console Form (unchanged) */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="lg:col-span-7 bg-cyber-dark/80 backdrop-blur-2xl rounded-3xl border border-cyber-blue/20 shadow-[0_0_50px_rgba(0,240,255,0.05)] relative overflow-hidden flex flex-col text-left"
+          >
+            {/* Terminal Header */}
+            <div className="bg-black/60 border-b border-cyber-blue/20 p-5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Cpu className="w-5 h-5 text-cyber-blue" />
+                <span className="text-xs font-mono tracking-[0.2em] text-cyber-light/80 uppercase">Main_Frame_Comms</span>
               </div>
-
-              <div className="group relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-cyber-light/30 group-focus-within:text-cyber-pink transition-colors duration-300" />
-                </div>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  placeholder="ROUTING_ADDRESS [EMAIL]"
-                  className="w-full bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-cyber-light font-mono text-sm focus:border-cyber-pink focus:bg-cyber-pink/5 focus:outline-none focus:ring-4 focus:ring-cyber-pink/10 transition-all duration-300 placeholder:text-cyber-light/30"
-                />
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-cyber-blue/30 border border-cyber-blue/60" />
+                <div className="w-3 h-3 rounded-full bg-cyber-green/30 border border-cyber-green/60" />
+                <div className="w-3 h-3 rounded-full bg-white/10 border border-white/30" />
               </div>
+            </div>
 
-              <div className="group relative flex-grow">
-                <div className="absolute top-4 left-0 pl-4 pointer-events-none">
-                  <MessageSquare className="h-5 w-5 text-cyber-light/30 group-focus-within:text-cyber-pink transition-colors duration-300" />
+            <div className="p-8 md:p-10 flex-grow flex flex-col justify-center relative">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyber-blue/5 rounded-full blur-[80px] pointer-events-none" />
+
+              <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10 h-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-cyber-light/30 group-focus-within:text-cyber-blue transition-colors duration-300" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="IDENTIFIER"
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-cyber-light font-mono text-sm focus:border-cyber-blue focus:bg-cyber-blue/5 focus:outline-none focus:ring-1 focus:ring-cyber-blue/50 transition-all duration-300 placeholder:text-cyber-light/30"
+                    />
+                  </div>
+
+                  <div className="group relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-cyber-light/30 group-focus-within:text-cyber-blue transition-colors duration-300" />
+                    </div>
+                    <input
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      placeholder="ROUTING_ADDRESS"
+                      className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-cyber-light font-mono text-sm focus:border-cyber-blue focus:bg-cyber-blue/5 focus:outline-none focus:ring-1 focus:ring-cyber-blue/50 transition-all duration-300 placeholder:text-cyber-light/30"
+                    />
+                  </div>
                 </div>
-                <textarea
-                  required
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                  placeholder="TRANSMISSION_PAYLOAD [MESSAGE]"
-                  rows={5}
-                  className="w-full h-full min-h-[140px] bg-white/[0.03] hover:bg-white/[0.05] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-cyber-light font-mono text-sm focus:border-cyber-pink focus:bg-cyber-pink/5 focus:outline-none focus:ring-4 focus:ring-cyber-pink/10 transition-all duration-300 placeholder:text-cyber-light/30 resize-none custom-scrollbar"
-                ></textarea>
-              </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="group relative flex items-center justify-center px-8 py-4 bg-gradient-to-r from-cyber-pink/10 to-cyber-purple/10 border border-cyber-pink/40 text-cyber-pink text-sm uppercase tracking-[0.2em] font-bold overflow-hidden rounded-xl hover:text-white transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed mt-2 shadow-[0_0_20px_rgba(255,0,85,0.1)] hover:shadow-[0_0_30px_rgba(255,0,85,0.3)]"
-              >
-                <div className="absolute inset-0 bg-gradient-to-r from-cyber-pink to-cyber-purple opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
-                <span className="relative z-10 font-mono flex items-center justify-center gap-3 w-full">
-                  {isSubmitting ? 'TRANSMITTING...' : submitted ? 'TRANSMISSION SENT' : 'SEND TRANSMISSION'}
-                  {!isSubmitting && !submitted && <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />}
-                </span>
-              </button>
+                <div className="group relative flex-grow">
+                  <div className="absolute top-4 left-0 pl-4 pointer-events-none">
+                    <MessageSquare className="h-5 w-5 text-cyber-light/30 group-focus-within:text-cyber-blue transition-colors duration-300" />
+                  </div>
+                  <textarea
+                    required
+                    value={formData.message}
+                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    placeholder="TRANSMISSION_PAYLOAD... Construct your message sequence."
+                    className="w-full h-full min-h-[180px] bg-black/40 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-cyber-light font-mono text-sm focus:border-cyber-blue focus:bg-cyber-blue/5 focus:outline-none focus:ring-1 focus:ring-cyber-blue/50 transition-all duration-300 placeholder:text-cyber-light/30 resize-none custom-scrollbar"
+                  ></textarea>
+                </div>
 
-              {submitted && (
-                <motion.p
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-cyber-green text-xs font-mono text-center tracking-widest uppercase mt-2 absolute bottom-[-30px] left-1/2 -translate-x-1/2 w-full"
-                >
-                  [SUCCESS] Message securely routed to destination.
-                </motion.p>
-              )}
-            </form>
-          </div>
-        </motion.div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                  <div className="text-[10px] font-mono text-cyber-light/40 tracking-widest uppercase hidden sm:flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-cyber-blue animate-pulse" />
+                    Awaiting Input_
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full sm:w-auto group relative flex items-center justify-center px-10 py-4 bg-cyber-blue/10 border border-cyber-blue/50 text-cyber-blue text-sm uppercase tracking-[0.2em] font-bold overflow-hidden rounded-2xl hover:text-cyber-dark transition-all duration-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_20px_rgba(0,240,255,0.1)] hover:shadow-[0_0_30px_rgba(0,240,255,0.4)]"
+                  >
+                    <div className="absolute inset-0 bg-cyber-blue translate-y-[100%] group-hover:translate-y-0 transition-transform duration-300 ease-in-out z-0"></div>
+                    <span className="relative z-10 font-mono flex items-center justify-center gap-3 w-full">
+                      {isSubmitting ? 'ENCRYPTING...' : submitted ? 'SENT' : 'TRANSMIT_DATA'}
+                      {!isSubmitting && !submitted && <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />}
+                    </span>
+                  </button>
+                </div>
+
+                {submitted && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute inset-0 bg-black/80 backdrop-blur-md rounded-2xl flex flex-col items-center justify-center z-20 border border-cyber-green/30"
+                  >
+                    <ShieldCheck className="w-20 h-20 text-cyber-green mb-6 drop-shadow-[0_0_20px_rgba(0,255,65,0.5)]" />
+                    <h4 className="text-cyber-green font-display text-2xl font-bold uppercase tracking-widest mb-2">Transmission Secure</h4>
+                    <p className="text-cyber-green/70 text-xs font-mono tracking-widest uppercase text-center max-w-sm px-4">
+                      Payload successfully routed and stored in local node. Awaiting response.
+                    </p>
+                  </motion.div>
+                )}
+              </form>
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      <footer className="mt-32 relative z-10 w-full border-t border-cyber-border bg-cyber-dark/40 backdrop-blur-md">
-        <div className="w-full absolute top-0 left-0 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        <div className="max-w-7xl mx-auto py-8 px-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
-           <div className="flex items-center gap-4">
-             <div className="flex items-center gap-2">
-               <div className="w-2 h-2 rounded-full bg-cyber-green animate-pulse shadow-[0_0_8px_#00ff41]" />
-               <span className="text-[10px] font-mono uppercase tracking-widest text-cyber-green">99.9% Uptime</span>
-             </div>
-           </div>
-
-           <div className="flex items-center">
-             <p className="text-[10px] font-mono text-cyber-light/40 tracking-widest uppercase">
-                &gt; YONAS SAHILE V3.0 // &copy; {new Date().getFullYear()} ALL RIGHTS SECURED.
-             </p>
-           </div>
+      <footer className="mt-32 relative z-10 w-full border-t border-cyber-blue/20 bg-cyber-dark/60 backdrop-blur-md py-8">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-cyber-light/40 font-mono text-xs uppercase tracking-widest">
+            &copy; {new Date().getFullYear()} Yonas. All Systems Operational.
+          </p>
+          <div className="flex gap-4 items-center">
+            <div className="h-1 w-1 rounded-full bg-cyber-blue animate-pulse"></div>
+            <span className="text-cyber-blue font-mono text-[10px] tracking-widest uppercase">Net_Status: Online</span>
+          </div>
         </div>
       </footer>
     </section>
