@@ -100,7 +100,7 @@ export function Hero() {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
+    <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       <Birds />
       <ProjectExplainer />
       {/* Animated Background Orbs */}
