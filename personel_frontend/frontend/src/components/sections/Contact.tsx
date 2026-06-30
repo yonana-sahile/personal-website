@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import {
   Github, Twitter, Facebook, Send, Network, Mail, User, MessageSquare,
-  Terminal, ShieldCheck, Activity, MapPin, Globe, Cpu, Fingerprint, Radar
+  Terminal, ShieldCheck, Activity, Cpu, Phone, Linkedin
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -10,6 +10,7 @@ export function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  // ── Real backend connection ────────────────────────────────────────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -72,14 +73,12 @@ export function Contact() {
             className="lg:col-span-5 flex flex-col gap-6"
           >
             {/* Large Profile Image – ALWAYS CLEAR */}
-            <div className="relative w-full h-[400px] lg:h-auto lg:flex-grow rounded-3xl overflow-hidden border border-cyber-blue/30 shadow-[0_0_40px_rgba(0,240,255,0.1)]">
-              {/* ❌ Removed overlay that caused the blue tint */}
+            <div className="relative w-full h-[400px] lg:min-h-[450px] lg:flex-grow rounded-3xl overflow-hidden border border-cyber-blue/30 shadow-[0_0_40px_rgba(0,240,255,0.1)]">
               <img
                 src="/profile.jpg"
                 alt="Yonas Sahile"
                 className="absolute inset-0 w-full h-full object-cover filter contrast-[1.1]"
               />
-
               <div className="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black/90 via-black/50 to-transparent z-20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 rounded-full bg-cyber-green animate-pulse shadow-[0_0_8px_rgba(0,255,65,0.8)]" />
@@ -91,23 +90,50 @@ export function Contact() {
               </div>
             </div>
 
-            {/* Social Nodes (unchanged) */}
-            <div className="grid grid-cols-2 gap-3 relative z-10">
+            {/* Contact Details */}
+            <div className="flex flex-col gap-3 relative z-10">
+              <a href="tel:0967005077" className="flex items-center justify-between px-5 py-3 border border-white/10 rounded-2xl text-cyber-light bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60 hover:border-cyber-pink">
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-cyber-pink group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-mono tracking-widest text-cyber-light/50 uppercase hidden sm:inline-block">Primary_Line</span>
+                </div>
+                <span className="font-mono text-sm font-bold tracking-widest group-hover:text-cyber-pink transition-colors">0967005077</span>
+              </a>
+
+              <a href="tel:0920886220" className="flex items-center justify-between px-5 py-3 border border-white/10 rounded-2xl text-cyber-light bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60 hover:border-cyber-pink">
+                <div className="flex items-center gap-3">
+                  <Phone className="w-4 h-4 text-cyber-pink group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-mono tracking-widest text-cyber-light/50 uppercase hidden sm:inline-block">Alt_Line</span>
+                </div>
+                <span className="font-mono text-sm font-bold tracking-widest group-hover:text-cyber-pink transition-colors">0920886220</span>
+              </a>
+
+              <a href="https://linkedin.com/in/yonas-sahile" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between px-5 py-3 border border-white/10 rounded-2xl text-cyber-light bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60 hover:border-[#0a66c2]">
+                <div className="flex items-center gap-3">
+                  <Linkedin className="w-4 h-4 text-[#0a66c2] group-hover:scale-110 transition-transform" />
+                  <span className="text-[10px] font-mono tracking-widest text-cyber-light/50 uppercase hidden sm:inline-block">Professional_Network</span>
+                </div>
+                <span className="font-mono text-sm font-bold tracking-widest group-hover:text-[#0a66c2] transition-colors">yonas-sahile</span>
+              </a>
+            </div>
+
+            {/* Social Nodes – 4‑column grid */}
+            <div className="grid grid-cols-4 gap-2 relative z-10">
               {[
                 { icon: Github, name: 'GitHub', color: 'group-hover:text-cyber-light group-hover:border-cyber-light group-hover:shadow-[0_0_15px_rgba(255,255,255,0.4)]' },
                 { icon: Facebook, name: 'Facebook', color: 'group-hover:text-cyber-blue group-hover:border-cyber-blue group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]' },
                 { icon: Send, name: 'Telegram', color: 'group-hover:text-cyber-green group-hover:border-cyber-green group-hover:shadow-[0_0_15px_rgba(0,255,65,0.4)]' },
                 { icon: Twitter, name: 'Twitter', color: 'group-hover:text-cyber-blue group-hover:border-cyber-blue group-hover:shadow-[0_0_15px_rgba(0,240,255,0.4)]' }
               ].map((social) => (
-                 <a key={social.name} href="#" title={social.name} className={`flex items-center gap-3 p-4 border border-white/10 rounded-2xl text-cyber-light/50 bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60`}>
+                 <a key={social.name} href="#" title={social.name} className={`flex flex-col items-center justify-center gap-2 p-3 border border-white/10 rounded-xl text-cyber-light/50 bg-black/40 backdrop-blur-md transition-all duration-300 group hover:bg-black/60`}>
                     <social.icon className={`w-5 h-5 transition-colors duration-300 ${social.color}`} />
-                    <span className="text-[10px] font-mono tracking-widest uppercase">{social.name}</span>
+                    <span className="text-[8px] font-mono tracking-widest uppercase hidden sm:block">{social.name}</span>
                  </a>
               ))}
             </div>
           </motion.div>
 
-          {/* Right Column: Terminal Console Form (unchanged) */}
+          {/* Right Column: Terminal Console Form */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
