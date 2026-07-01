@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Terminal, X, Send, Loader2, Sparkles, RotateCcw, Zap } from 'lucide-react';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { API_BASE } from '../../config';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Message = {
@@ -21,24 +22,19 @@ const QUICK_CHIPS = [
 ];
 
 // ─── Rich text renderer ───────────────────────────────────────────────────────
-// Parses **bold**, *italic*, • bullets, numbered lists, ━ dividers, and line breaks
 function RichText({ text }: { text: string }) {
   const lines = text.split('\n');
 
   return (
     <div className="space-y-[3px]">
       {lines.map((line, i) => {
-        // Horizontal divider
         if (/^━+$/.test(line.trim())) {
           return <hr key={i} className="border-cyber-blue/20 my-1" />;
         }
-
-        // Empty line → small spacer
         if (line.trim() === '') {
           return <div key={i} className="h-1" />;
         }
 
-        // Parse inline bold (**text**) and italic (*text*)
         const parseInline = (str: string) => {
           const parts: React.ReactNode[] = [];
           const regex = /(\*\*(.+?)\*\*|\*(.+?)\*)/g;
@@ -68,7 +64,6 @@ function RichText({ text }: { text: string }) {
           return parts;
         };
 
-        // Bullet point
         if (line.startsWith('• ') || line.startsWith('* ')) {
           return (
             <div key={i} className="flex items-start gap-1.5 pl-1">
@@ -78,7 +73,6 @@ function RichText({ text }: { text: string }) {
           );
         }
 
-        // Numbered list
         const numMatch = line.match(/^(\d+\.\s)/);
         if (numMatch) {
           return (
@@ -89,7 +83,6 @@ function RichText({ text }: { text: string }) {
           );
         }
 
-        // Regular line
         return (
           <div key={i} className="leading-relaxed">
             {parseInline(line)}
@@ -155,7 +148,7 @@ export function AIAssistantWidget() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat/text/', {
+      const response = await fetch(`${API_BASE}/api/chat/text/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text.trim() }),
@@ -163,7 +156,6 @@ export function AIAssistantWidget() {
       const data = await response.json();
       const replyText = response.ok ? data.text : `⚠️ ${data.error || 'Something went wrong.'}`;
 
-      // Replace typing indicator with real message
       setMessages(prev => [
         ...prev.filter(m => m.id !== 'typing'),
         { id: Date.now().toString(), role: 'model', text: replyText },
@@ -174,7 +166,7 @@ export function AIAssistantWidget() {
         {
           id: Date.now().toString(),
           role: 'model',
-          text: '⚠️ **Connection error.**\n\nMake sure the backend server is running at `localhost:8000`.',
+          text: '⚠️ **Connection error.**\n\nMake sure the backend server is running.',
         },
       ]);
     } finally {
@@ -294,16 +286,13 @@ export function AIAssistantWidget() {
 
             {/* ── Header ──────────────────────────────────────────────────── */}
             <div className="relative flex items-center justify-between px-4 py-3 border-b border-white/5 bg-gradient-to-r from-cyber-blue/8 via-cyber-purple/5 to-transparent shrink-0">
-              {/* Subtle top glow line */}
               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyber-blue/50 to-transparent" />
 
               <div className="flex items-center gap-3">
-                {/* Avatar */}
                 <div className="relative">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-cyber-blue/30 to-cyber-purple/30 border border-cyber-blue/40 flex items-center justify-center">
                     <Sparkles className="w-4 h-4 text-cyber-blue" />
                   </div>
-                  {/* Online dot */}
                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-cyber-green border-2 border-[#050510] animate-pulse" />
                 </div>
 
@@ -318,7 +307,6 @@ export function AIAssistantWidget() {
               </div>
 
               <div className="flex items-center gap-1">
-                {/* Reset button */}
                 <button
                   onClick={handleReset}
                   title="Reset conversation"
@@ -326,7 +314,6 @@ export function AIAssistantWidget() {
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                 </button>
-                {/* Close button */}
                 <button
                   onClick={() => setIsOpen(false)}
                   className="p-1.5 rounded-lg text-white/30 hover:text-cyber-pink hover:bg-cyber-pink/10 transition-all duration-200"
@@ -347,14 +334,12 @@ export function AIAssistantWidget() {
                   transition={{ duration: 0.25, delay: index === messages.length - 1 ? 0 : 0 }}
                   className={`flex gap-2 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {/* AI avatar */}
                   {msg.role === 'model' && (
                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyber-blue/20 to-cyber-purple/20 border border-cyber-blue/30 flex items-center justify-center shrink-0 mt-0.5">
                       <Sparkles className="w-3 h-3 text-cyber-blue" />
                     </div>
                   )}
 
-                  {/* Bubble */}
                   <div
                     className={`max-w-[82%] rounded-2xl font-mono text-[11px] leading-relaxed ${
                       msg.role === 'user'
@@ -371,7 +356,6 @@ export function AIAssistantWidget() {
                     )}
                   </div>
 
-                  {/* User avatar */}
                   {msg.role === 'user' && (
                     <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-cyber-blue/30 to-cyber-purple/20 border border-cyber-blue/30 flex items-center justify-center shrink-0 mt-0.5">
                       <Terminal className="w-3 h-3 text-cyber-blue" />
@@ -380,7 +364,6 @@ export function AIAssistantWidget() {
                 </motion.div>
               ))}
 
-              {/* ── Quick-action chips ────────────────────────────────────── */}
               <AnimatePresence>
                 {showChips && !isLoading && (
                   <motion.div
@@ -434,7 +417,6 @@ export function AIAssistantWidget() {
                 </button>
               </form>
 
-              {/* Footer hint */}
               <p className="text-center font-mono text-[9px] text-white/15 mt-2 tracking-wider">
                 AI · Yonas Sahile Portfolio · Powered by Python NLP
               </p>
