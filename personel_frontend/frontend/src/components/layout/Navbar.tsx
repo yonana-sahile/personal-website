@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { ViewerScanner } from '../ui/ViewerScanner';
 import { CVManagerModal } from '../ui/CVManagerModal';
 import { CertificateManagerModal } from '../ui/CertificateManagerModal';
-import { DigitalClock } from '../ui/DigitalClock';   // 👈 re-added
+import { DigitalClock } from '../ui/DigitalClock';
+import { API_BASE } from '../../config';
 
 const navItems = [
   { name: 'ABOUT', href: '#about' },
@@ -53,7 +54,7 @@ export function Navbar() {
     }
 
     // Fetch CV URL from Django backend
-    fetch('http://localhost:8000/api/cv/')
+    fetch(`${API_BASE}/api/cv/`)
       .then(res => res.json())
       .then(data => {
         if (data && data.url) {
