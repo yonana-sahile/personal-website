@@ -2,9 +2,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ExternalLink, Github, TerminalSquare, Plus, Trash2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ProjectManagerModal } from '../ui/ProjectManagerModal';
+import { API_BASE } from '../../config';
 
 const initialProjects = [
   {
+    id: '1',
     title: 'Zero-Trust Protocol',
     description: 'Authentication flow implementing mutual TLS and biometric verification for high-security enterprise environments. Custom VPN architecture.',
     tech: ['Golang', 'gRPC', 'PostgreSQL', 'Redis'],
@@ -15,6 +17,7 @@ const initialProjects = [
     image: ''
   },
   {
+    id: '2',
     title: 'NetScanner v2',
     description: 'Automated network mapping tool that runs passively to detect vulnerabilities across internal subnets without triggering IDS/IPS systems.',
     tech: ['Python', 'asyncio', 'Scapy', 'Docker'],
@@ -25,6 +28,7 @@ const initialProjects = [
     image: ''
   },
   {
+    id: '3',
     title: 'Threat Intel OSINT',
     description: 'Real-time aggregation of OSINT data processing 50k+ indicators of compromise daily. Interactive D3.js node graph of threat actor networks.',
     tech: ['React', 'Node.js', 'Elasticsearch'],
@@ -35,6 +39,7 @@ const initialProjects = [
     image: ''
   },
   {
+    id: '4',
     title: 'WAF Fuzzer Mod',
     description: 'Research tool designed to mutate HTTP requests intelligently to bypass modern firewalls. Uncovered continuous zero-days in enterprise WAFs.',
     tech: ['Rust', 'HTTP/2', 'Machine Learning'],
@@ -68,10 +73,11 @@ export function Projects() {
   }, []);
 
   useEffect(() => {
-    fetch('/api/projects')
+    // Fetch projects from Django backend
+    fetch(`${API_BASE}/api/projects/`)
       .then(res => res.json())
       .then(data => {
-        if (data && Array.isArray(data)) {
+        if (data && Array.isArray(data) && data.length > 0) {
           setProjectList(data);
         }
       })
@@ -83,9 +89,11 @@ export function Projects() {
     if (!confirm('Are you sure you want to delete this project?')) return;
 
     try {
-      const res = await fetch(`/api/projects/${id}`, {
+      const res = await fetch(`${API_BASE}/api/projects/${id}/delete/`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${adminToken}` }
+        headers: {
+          'Authorization': `Token ${adminToken}`
+        }
       });
       if (res.ok) {
         setProjectList(projectList.filter(p => p.id !== id));
@@ -141,7 +149,7 @@ export function Projects() {
           <AnimatePresence>
             {projectList.map((project, index) => (
               <motion.div
-                key={project.title + index}
+                key={project.id || project.title + index}
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: -20 }}
@@ -149,10 +157,7 @@ export function Projects() {
                 whileHover={{ y: -10 }}
                 className={`group relative glass-panel border border-cyber-light/10 p-8 rounded-2xl transition-all duration-500 overflow-hidden flex flex-col ${getColorClass(project.color, 'hover')}`}
               >
-                {/* Glowing background burst on hover */}
                 <div className={`absolute -inset-2 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 ${getColorClass(project.color, 'bg')}`} />
-
-                {/* Scanline decoration */}
                 <div className={`absolute top-0 left-0 w-1 h-full opacity-50 group-hover:opacity-100 transition-opacity duration-300 ${getColorClass(project.color, 'bg')} ${getColorClass(project.color, 'shadow')}`} />
 
                 <div className="relative z-10 flex justify-between items-start mb-8">
