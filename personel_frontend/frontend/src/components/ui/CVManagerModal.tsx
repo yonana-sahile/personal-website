@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { API_BASE } from '../../config';
 
 interface CVManagerModalProps {
   isOpen: boolean;
@@ -26,11 +27,12 @@ export function CVManagerModal({ isOpen, onClose, onCVUploaded }: CVManagerModal
   const [cvFile, setCvFile] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ── Login (updated for DRF token) ──────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -49,12 +51,13 @@ export function CVManagerModal({ isOpen, onClose, onCVUploaded }: CVManagerModal
     }
   };
 
+  // ── Forgot / Reset Password ──────────────────────────────────────────
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     setForgotMessage('');
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone })
@@ -76,7 +79,7 @@ export function CVManagerModal({ isOpen, onClose, onCVUploaded }: CVManagerModal
     setLoginError('');
     setForgotMessage('');
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await fetch(`${API_BASE}/api/auth/reset-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, otp, newPassword })
@@ -98,6 +101,7 @@ export function CVManagerModal({ isOpen, onClose, onCVUploaded }: CVManagerModal
     }
   };
 
+  // ── File upload (unchanged) ────────────────────────────────────────────
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -109,15 +113,19 @@ export function CVManagerModal({ isOpen, onClose, onCVUploaded }: CVManagerModal
     }
   };
 
+  // ── Upload CV (updated for Django) ──────────────────────────────────────
   const handleUploadCV = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      const res = await fetch('/api/cv', {
+      const res = await fetch(`${API_BASE}/api/cv/upload/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, url: cvFile })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify({ url: cvFile })
       });
       const data = await res.json();
       if (res.ok) {
