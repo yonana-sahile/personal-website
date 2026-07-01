@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Upload, CheckCircle, AlertCircle } from 'lucide-react';
-
-const API_BASE = 'http://localhost:8000/api';
+import { API_BASE } from '../../config';
 
 interface CertificateManagerModalProps {
   isOpen: boolean;
@@ -29,7 +28,7 @@ export function CertificateManagerModal({ isOpen, onClose, onCertificateUploaded
     e.preventDefault();
     setLoginError('');
     try {
-      const res = await fetch(`${API_BASE}/auth/login/`, {
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -64,7 +63,7 @@ export function CertificateManagerModal({ isOpen, onClose, onCertificateUploaded
     setIsSubmitting(true);
 
     try {
-      const res = await fetch(`${API_BASE}/certificates/add/`, {
+      const res = await fetch(`${API_BASE}/api/certificates/add/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
