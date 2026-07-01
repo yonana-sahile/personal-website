@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Globe as GlobeIcon, Mic, MicOff, X, Volume2 } from 'lucide-react';
+import { API_BASE } from '../../config';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Language = 'en' | 'am' | 'om' | 'ti';
@@ -175,7 +176,7 @@ const ProjectExplainer: React.FC = () => {
       setStatusText('Speaking...');
       setAiResponse(text);
 
-      const res = await fetch('http://localhost:8000/api/gtts-robot/', {
+      const res = await fetch(`${API_BASE}/api/gtts-robot/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
         credentials: 'include',
@@ -254,7 +255,7 @@ const ProjectExplainer: React.FC = () => {
         setStatusText('Thinking... 🧠');
 
         try {
-          const response = await fetch('http://localhost:8000/api/chat/text/', {
+          const response = await fetch(`${API_BASE}/api/chat/text/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ message: text.trim() }),
