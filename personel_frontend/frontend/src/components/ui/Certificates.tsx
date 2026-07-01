@@ -1,8 +1,7 @@
 import { motion } from 'motion/react';
 import { Award, ExternalLink, ShieldCheck, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-
-const API_BASE = 'http://localhost:8000/api';
+import { API_BASE } from '../../config';
 
 interface Certificate {
   id: string;
@@ -18,7 +17,7 @@ export function Certificates() {
   const [isAdmin, setIsAdmin] = useState(!!localStorage.getItem('adminToken'));
 
   const fetchCertificates = () => {
-    fetch(`${API_BASE}/certificates/`)
+    fetch(`${API_BASE}/api/certificates/`)
       .then(res => res.json())
       .then(data => setCertificates(data))
       .catch(err => console.error("Failed to fetch certificates", err));
@@ -37,7 +36,7 @@ export function Certificates() {
     if (!confirm('Are you sure you want to delete this certificate?')) return;
 
     try {
-      const res = await fetch(`${API_BASE}/certificates/${id}/delete/`, {
+      const res = await fetch(`${API_BASE}/api/certificates/${id}/delete/`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Token ${localStorage.getItem('adminToken')}`
