@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Lock, Upload, Plus, AlertCircle, CheckCircle } from 'lucide-react';
+import { API_BASE } from '../../config';
 
 interface ProjectManagerModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
+  // Password reset states
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
@@ -31,11 +33,12 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
   const [image, setImage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ── Login (updated for DRF token) ──────────────────────────────────────
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
@@ -45,7 +48,6 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
         setToken(data.token);
         setIsLoggedIn(true);
         localStorage.setItem('adminToken', data.token);
-        // Dispatch an event so Projects.tsx can re-render if it listens to storage (optional, or just handle via state)
         window.dispatchEvent(new Event('adminLogin'));
       } else {
         setLoginError(data.error || 'Login failed');
@@ -55,12 +57,13 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
     }
   };
 
+  // ── Forgot / Reset Password ──────────────────────────────────────────
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
     setForgotMessage('');
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const res = await fetch(`${API_BASE}/api/auth/forgot-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone })
@@ -82,7 +85,7 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
     setLoginError('');
     setForgotMessage('');
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await fetch(`${API_BASE}/api/auth/reset-password/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, otp, newPassword })
@@ -104,6 +107,7 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
     }
   };
 
+  // ── Image upload (unchanged) ───────────────────────────────────────────
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -115,6 +119,7 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
     }
   };
 
+  // ── Add project (updated for Django) ────────────────────────────────────
   const handleAddProject = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -131,14 +136,17 @@ export function ProjectManagerModal({ isOpen, onClose, onProjectAdded }: Project
     };
 
     try {
-      const res = await fetch('/api/projects', {
+      const res = await fetch(`${API_BASE}/api/projects/add/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, project: newProject })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Token ${token}`
+        },
+        body: JSON.stringify(newProject)
       });
       const data = await res.json();
       if (res.ok) {
-        onProjectAdded(data.project);
+        onProjectAdded(data);
         onClose();
       } else {
         alert(data.error || 'Failed to add project');
