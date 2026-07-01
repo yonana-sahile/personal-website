@@ -4,6 +4,7 @@ import {
   Terminal, ShieldCheck, Activity, Cpu, Phone, Linkedin
 } from 'lucide-react';
 import { useState } from 'react';
+import { API_BASE } from '../../config';
 
 export function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -15,7 +16,7 @@ export function Contact() {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const res = await fetch('http://localhost:8000/api/contact/', {
+      const res = await fetch(`${API_BASE}/api/contact/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
