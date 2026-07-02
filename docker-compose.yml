@@ -17,15 +17,15 @@ services:
 
   frontend:
     build:
-      context: ./personel_frontend
+      context: ./personel_frontend/frontend    # actual React app folder
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
     volumes:
-      - ./personel_frontend:/app
+      - ./personel_frontend/frontend:/app      # mount the correct folder
       - /app/node_modules
     environment:
-      - VITE_API_URL=http://backend:8000   # inside Docker, backend is available at this host
+      - VITE_API_URL=http://localhost:8000     # <-- now the browser can reach the backend
     depends_on:
       - backend
     command: npm run dev -- --host 0.0.0.0
